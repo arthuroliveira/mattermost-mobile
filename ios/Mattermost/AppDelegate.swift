@@ -31,6 +31,7 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
     @objc var orientationLock: UIInterfaceOrientationMask = .allButUpsideDown
 
     var window: UIWindow?
+    private(set) var launchOptions: [UIApplication.LaunchOptionsKey: Any]?
 
     var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
     var reactNativeFactory: RCTReactNativeFactory?
@@ -52,6 +53,7 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         // Initialize Sentry early for native crash reporting (only when DSN is configured)
+        self.launchOptions = launchOptions
         if let optionsPath = Bundle.main.path(forResource: "sentry.options", ofType: "json"),
            let data = try? Data(contentsOf: URL(fileURLWithPath: optionsPath)),
            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -118,22 +120,9 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
         reactNativeDelegate = delegate
         reactNativeFactory = factory
 
-        #if os(iOS) || os(tvOS)
-        window = UIWindow(frame: UIScreen.main.bounds)
-        factory.startReactNative(
-            withModuleName: "Mattermost",
-            in: window,
-            launchOptions: launchOptions
-        )
-        #endif
-
         let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
 
         os_log("Mattermost started!!")
-
-        if let factory = reactNativeFactory {
-            PasteInputModule.setup(factory.rootViewFactory)
-        }
 
         #if canImport(mattermost_intune)
         // Restore enrollments if needed (silent, non-blocking)
@@ -141,6 +130,19 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
         #endif
 
         return result
+    }
+
+    // iOS 27 requires the window to belong to a connected UIWindowScene.
+    func startReactNative(in window: UIWindow, launchOptions: [UIApplication.LaunchOptionsKey: Any]) {
+        self.window = window
+        reactNativeFactory?.startReactNative(
+            withModuleName: "Mattermost",
+            in: window,
+            launchOptions: launchOptions
+        )
+        if let factory = reactNativeFactory {
+            PasteInputModule.setup(factory.rootViewFactory)
+        }
     }
 
     // MARK: - Remote Notifications
@@ -226,7 +228,9 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
         if handleMSALURL(url) {
             return true
         }
-        return RCTLinkingManager.application(app, open: url, options: options)
+        let handledByExpo = super.application(app, open: url, options: options)
+        let handledByReactNative = RCTLinkingManager.application(app, open: url, options: options)
+        return handledByExpo || handledByReactNative
     }
 
     func application(
@@ -257,7 +261,9 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
         continue userActivity: NSUserActivity,
         restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
     ) -> Bool {
-        return RCTLinkingManager.application(application, continue: userActivity, restorationHandler: restorationHandler)
+        let handledByExpo = super.application(application, continue: userActivity, restorationHandler: restorationHandler)
+        let handledByReactNative = RCTLinkingManager.application(application, continue: userActivity, restorationHandler: restorationHandler)
+        return handledByExpo || handledByReactNative
     }
 
     // MARK: - App Lifecycle

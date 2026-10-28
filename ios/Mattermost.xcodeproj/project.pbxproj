@@ -63,6 +63,7 @@
 		67FEAE292A1261A000DDF4AE /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEAE262A1261A000DDF4AE /* Localizable.strings */; };
 		67FEAE2A2A1261EA00DDF4AE /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEADFA2A1260B900DDF4AE /* Localizable.strings */; };
 		67FEAE2C2A127C3600DDF4AE /* NumberFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67FEAE2B2A127C3600DDF4AE /* NumberFormatter.swift */; };
+		6E29737239D477451F651034 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8FEED0DBFBE75DF40780D08 /* SceneDelegate.swift */; };
 		7F0F4B0A24BA173900E14C60 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F0F4B0924BA173900E14C60 /* SplashScreen.storyboard */; };
 		7F151D3E221B062700FAD8F3 /* RuntimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F151D3D221B062700FAD8F3 /* RuntimeUtils.swift */; };
 		7F1EB88527FDE361002E7EEC /* GekidouWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1EB88427FDE361002E7EEC /* GekidouWrapper.swift */; };
@@ -388,6 +389,7 @@
 		D5BFAE74F433C89928647CA1 /* Pods-NotificationService.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.debug.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.debug.xcconfig"; sourceTree = "<group>"; };
 		E5C16B14E1CE4868886A1A00 /* OpenSans-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-SemiBold.ttf"; path = "../assets/fonts/OpenSans-SemiBold.ttf"; sourceTree = "<group>"; };
 		EE4DF6C6FE37476E065D85ED /* Pods-NotificationService.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.release.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.release.xcconfig"; sourceTree = "<group>"; };
+		F8FEED0DBFBE75DF40780D08 /* SceneDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = Mattermost/SceneDelegate.swift; sourceTree = "<group>"; };
 		FBBEC29EE2D3418D9AC33BD5 /* OpenSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBoldItalic.ttf"; path = "../assets/fonts/OpenSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -506,6 +508,7 @@
 				7F151D43221B082A00FAD8F3 /* Mattermost-Bridging-Header.h */,
 				7F0F4B0924BA173900E14C60 /* SplashScreen.storyboard */,
 				C9A1070F2BBD7C8700753CDC /* PrivacyInfo.xcprivacy */,
+				F8FEED0DBFBE75DF40780D08 /* SceneDelegate.swift */,
 			);
 			name = Mattermost;
 			sourceTree = "<group>";
@@ -1425,11 +1428,13 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Mattermost/Pods-Mattermost-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/RaTeXRuntime/RaTeXRuntime.framework",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/WebRTC-SDK/WebRTC.framework/WebRTC",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermesvm.framework/hermesvm",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RaTeXRuntime.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WebRTC.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermesvm.framework",
 			);
@@ -1592,6 +1597,7 @@
 				7F537B2928A517580086D6B3 /* NotificationHelper.swift in Sources */,
 				536CC6C323E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m in Sources */,
 				1AC06461F0B9867B11829943 /* ExpoModulesProvider.swift in Sources */,
+				6E29737239D477451F651034 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2047,7 +2053,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 831;
-				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
+				DEVELOPMENT_TEAM = 678MGM5WY5;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = Mattermost/Info.plist;
@@ -2066,7 +2072,7 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arthuroliveira.mattermost;
 				PRODUCT_NAME = Mattermost;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2089,7 +2095,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 831;
-				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
+				DEVELOPMENT_TEAM = 678MGM5WY5;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = Mattermost/Info.plist;
@@ -2105,7 +2111,7 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arthuroliveira.mattermost;
 				PRODUCT_NAME = Mattermost;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2141,7 +2147,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
+				DEVELOPMENT_TEAM = 678MGM5WY5;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -2156,8 +2162,12 @@
 					"$(inherited)",
 					"-DFB_SONARKIT_ENABLED=1",
 				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lc++",
+				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arthuroliveira.mattermost.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -2193,7 +2203,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
+				DEVELOPMENT_TEAM = 678MGM5WY5;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -2204,8 +2214,12 @@
 				);
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lc++",
+				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arthuroliveira.mattermost.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -2242,7 +2256,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 831;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
+				DEVELOPMENT_TEAM = 678MGM5WY5;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MattermostShare/Info.plist;
@@ -2255,8 +2269,12 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lc++",
+				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.MattermostShare;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arthuroliveira.mattermost.MattermostShare;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -2295,7 +2313,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 831;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
+				DEVELOPMENT_TEAM = 678MGM5WY5;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MattermostShare/Info.plist;
@@ -2307,8 +2325,12 @@
 				);
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lc++",
+				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.MattermostShare;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arthuroliveira.mattermost.MattermostShare;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;

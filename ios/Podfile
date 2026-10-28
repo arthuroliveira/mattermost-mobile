@@ -81,6 +81,7 @@ target 'Mattermost' do
   )
 
   pod 'simdjson', path: '../node_modules/@nozbe/simdjson', :modular_headers => true
+  pod 'RaTeXRuntime', :path => '../node_modules/ratex-react-native'
   pod 'Gekidou', :path => './Gekidou'
   pod 'CocoaLumberjack', :modular_headers => true
   pod 'TurboLogIOSNative', :git => 'https://github.com/larkox/react-native-turbo-log-ios-native.git', :modular_headers => true
@@ -107,6 +108,18 @@ target 'MattermostShare' do
   pod 'react-native-network-client-session-attributes', :path => '../node_modules/@mattermost/react-native-network-client'
 end
 
+pre_install do |installer|
+  # Isolate RaTeX's Rust exception runtime from the app's Swift/C++/ObjC
+  # runtimes: compact unwind supports at most three personalities per image.
+  installer.pod_targets.each do |target|
+    if target.name == 'RaTeXRuntime'
+      def target.build_type
+        Pod::BuildType.dynamic_framework
+      end
+    end
+  end
+end
+
 post_install do |installer|
   react_native_post_install(
     installer,
@@ -117,8 +130,14 @@ post_install do |installer|
 
   installer.pods_project.targets.each do |t|
     t.build_configurations.each do |bc|
+      # Keep dependency and resource-bundle targets compatible with current Xcode.
+      deployment_target = bc.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+      if deployment_target.nil? || Gem::Version.new(deployment_target) < Gem::Version.new(app_deployment_target)
+        bc.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = app_deployment_target
+      end
       bc.build_settings['SWIFT_VERSION']        = '5.9'
       bc.build_settings['OTHER_LDFLAGS']        = ['$(inherited)', '-ObjC']
+      bc.build_settings['OTHER_LDFLAGS'] << '-all_load' if t.name == 'RaTeXRuntime'
       bc.build_settings['STRIP_SWIFT_SYMBOLS']  = 'NO'
       bc.build_settings['ENABLE_BITCODE']       = 'NO'
     end
