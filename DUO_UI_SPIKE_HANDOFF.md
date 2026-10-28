@@ -2,6 +2,14 @@
 
 Status: **PARTIAL, Linux-validated only. Native compatibility pending Mac.**
 
+## Integrated Mac build fixes
+
+Arthur's commit `8697cd3efa5de1ffb1805109f107608d51b34b41` (`fix(ios): support iOS 27 startup and device builds`) is now merged into this spike branch. It adds scene-based startup, link/lifecycle forwarding, personal device-signing/app-group configuration, and RaTeX runtime/Pod build fixes. Arthur reports successful iOS 27 compilation of that source branch; the combined spike has not been compiled on Mac here.
+
+All files changed by Arthur's commit were verified byte-for-byte preserved after the conflict-free merge. Post-merge Linux checks: 61 tests across 6 suites passed; full TypeScript, focused ESLint, diff checks, and changed plist/entitlement XML parsing passed. Jest emitted a worker teardown/open-handle warning despite passing; this is not evidence of native runtime failure. The first combined check command timed out during TypeScript; a separate longer TypeScript run passed.
+
+When updating an existing spike checkout, fetch/pull this branch and rerun the project's dependency/patch and Pod installation steps because the RaTeX patch, Podfile, and lockfile changed. Preserve local configuration overrides. Verify native startup, links, background/resume, and the opt-in UI on Mac. The revision details below describe the original UI candidate; current branch HEAD additionally includes Arthur's build fixes and this integration record.
+
 ## Exact revision / checkout
 
 - Branch: `spike/iphone-duo-adaptive-controls`.
