@@ -1,6 +1,14 @@
 # 001 — Channel adaptive-controls feasibility spike
 
-## Verdict: PARTIAL (Linux-validated candidate only)
+## Current branch verdict: expanded-navigation successor, Linux validated; native gate pending
+
+This branch now contains the successor implementation at `c3dd80b629ae24e5ba8160f230026411000a056e`, with pure policy commit `2f19b716cb5d5bdb1d5b3297c5d1a1b1981c2752`, based on `5e7aed5c354dd294a78c9eb3e8e5f4027a78dbed`. Its scope is **persistent navigation list | existing conversation/authenticated stack | physical-right actual primary tab rail**, with contextual Back relocated from the shared header. It reuses the default-off development flag and local tablet split seam, not global tablet impersonation. The older channel-action side rail is suppressed while the primary rail is active.
+
+Authoritative successor setup, exact branch/worktree, inventory, RED/GREEN record, executed commands, rollback and native checklist: [`DUO_EXPANDED_NAVIGATION_HANDOFF.md`](../../DUO_EXPANDED_NAVIGATION_HANDOFF.md). Linux regression result: 18 suites passed, 171 tests passed, 2 existing skips; changed-file ESLint, full TypeScript and diff checks passed. Observable/FlashList `act` and worker teardown warnings remain disclosed. No native build/render/mobile MCP or Mac access occurred; native verification is explicitly deferred, not silently treated as passing.
+
+**The remainder of this file is the historical channel-action-only spike report.** Its `auto` behavior, menu scope, old commits, worktree and rollback describe that earlier implementation, not the successor's geometry-driven primary navigation. Do not use those historical revision identifiers to validate the expanded candidate.
+
+## Historical verdict: PARTIAL (Linux-validated candidate only)
 
 Given the existing Mattermost channel navigation and current usable container geometry,
 when the container resizes or a developer explicitly requests a side placement,
