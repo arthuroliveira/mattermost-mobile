@@ -11,6 +11,8 @@ import NavigationButton, {type NavigationButtonProps} from '@components/navigati
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import ViewConstants from '@constants/view';
 import {useIsTablet} from '@hooks/device';
+import {useExpandedNavigation} from '@screens/home/expanded_navigation';
+import ExpandedBack from '@screens/home/expanded_navigation/back';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -149,6 +151,7 @@ const Header = ({
     const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
+    const {active: primaryRailActive} = useExpandedNavigation();
 
     const opacity = useAnimatedStyle(() => {
         if (!isLargeTitle) {
@@ -190,7 +193,10 @@ const Header = ({
 
     return (
         <Animated.View style={containerStyle}>
-            {showBackButton &&
+            {primaryRailActive && showBackButton && onBackPress &&
+            <ExpandedBack onPress={onBackPress}>{leftComponent}</ExpandedBack>
+            }
+            {showBackButton && !primaryRailActive &&
             <Animated.View style={styles.leftContainer}>
                 <TouchableWithFeedback
                     borderlessRipple={true}

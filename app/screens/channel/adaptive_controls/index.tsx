@@ -7,6 +7,7 @@ import {I18nManager, type LayoutChangeEvent, ScrollView, View, type StyleProp, t
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
+import {useExpandedNavigation} from '@screens/home/expanded_navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {isAdaptiveControlsEnabled, useDevelopmentOverride} from './development';
@@ -32,10 +33,11 @@ export default function AdaptiveChannelLayout({children}: PropsWithChildren) {
     const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
     const override = useDevelopmentOverride();
+    const {active: primaryRailActive} = useExpandedNavigation();
     const [size, setSize] = useState({width: 0, height: 0});
     const hostName = `channel-adaptive-controls-${useId()}`;
     const placement = getAdaptivePlacement({
-        enabled: isAdaptiveControlsEnabled(),
+        enabled: isAdaptiveControlsEnabled() && !primaryRailActive,
         development: __DEV__,
         override,
         usableWidth: size.width,

@@ -10,6 +10,7 @@ import GlobalClassificationBannerContainer, {GLOBAL_BANNER_PORTAL_HOST} from '@c
 import {useTheme} from '@context/theme';
 import {withServerDatabase} from '@database/components';
 import {useHasCredentials} from '@hooks/use_has_credentials';
+import ExpandedNavigation from '@screens/home/expanded_navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -59,9 +60,11 @@ function AuthenticatedLayout() {
     return (
         <View style={styles.safeAreaView}>
             <GlobalClassificationBannerContainer hostName={bannerHostName}>
-                <Stack screenOptions={stackScreenOptions}>
-                    <Stack.Screen name='(home)'/>
-                </Stack>
+                <ExpandedNavigation>
+                    <Stack screenOptions={stackScreenOptions}>
+                        <Stack.Screen name='(home)'/>
+                    </Stack>
+                </ExpandedNavigation>
             </GlobalClassificationBannerContainer>
             <PortalHost name={bannerHostName}/>
         </View>

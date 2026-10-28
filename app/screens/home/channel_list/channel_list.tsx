@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Portal} from '@gorhom/portal';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect} from 'react';
@@ -22,6 +23,8 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
+import {isAdaptiveControlsEnabled} from '@screens/channel/adaptive_controls/development';
+import {useExpandedNavigation} from '@screens/home/expanded_navigation';
 import {navigateToScreen} from '@screens/navigation';
 import {NavigationStore, useCurrentScreen} from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
@@ -57,6 +60,7 @@ const styles = StyleSheet.create({
     flex: {
         flex: 1,
     },
+    hidden: {display: 'none'},
 });
 
 let backPressedCount = 0;
@@ -76,6 +80,8 @@ const ChannelListScreen = (props: ChannelProps) => {
     const intl = useIntl();
 
     const isTablet = useIsTablet();
+    const {active: expanded, listHost} = useExpandedNavigation();
+    const expandedOptIn = isAdaptiveControlsEnabled();
     const route = useRoute();
     const isFocused = useIsFocused();
     const navigation = useNavigation();
@@ -192,22 +198,55 @@ const ChannelListScreen = (props: ChannelProps) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    return (
-        <Animated.View
-            entering={FadeIn.duration(350)}
+    // Keep the default-off phone/iPad tree unchanged. Once entered, the local
+    // split stays mounted (hidden in compact) so resizing does not discard it.
+    if (!expanded && !expandedOptIn) {
+        return (
+            <Animated.View
+                entering={FadeIn.duration(350)}
+                style={styles.flex}
+                testID='channel_list.screen'
+            >
+                <Animated.View style={top}/>
+                <ConnectionBanner/>
+                {props.isLicensed && <AnnouncementBanner/>}
+                <View style={styles.content}>
+                    {canAddOtherServers && <Servers/>}
+                    <Animated.View style={[styles.content, animated]}>
+                        <TeamSidebar
+                            iconPad={canAddOtherServers}
+                            hasMoreThanOneTeam={props.hasMoreThanOneTeam}
+                        />
+                        <CategoriesList
+                            iconPad={canAddOtherServers && !props.hasMoreThanOneTeam}
+                            isCRTEnabled={props.isCRTEnabled}
+                            moreThanOneTeam={props.hasMoreThanOneTeam}
+                            hasChannels={props.hasChannels}
+                        />
+                        {isTablet && props.hasChannels && <AdditionalTabletView/>}
+                        {props.showIncomingCalls && !isTablet &&
+                        <FloatingCallContainer
+                            showIncomingCalls={props.showIncomingCalls}
+                            channelsScreen={true}
+                        />
+                        }
+                    </Animated.View>
+                </View>
+            </Animated.View>
+        );
+    }
+
+    const navigationList = (
+        <View
+            testID='duo.home.navigation'
             style={styles.flex}
-            testID='channel_list.screen'
         >
             <Animated.View style={top}/>
             <ConnectionBanner/>
-            {props.isLicensed &&
-            <AnnouncementBanner/>
-            }
+            {props.isLicensed && <AnnouncementBanner/>}
             <View style={styles.content}>
                 {canAddOtherServers && <Servers/>}
-                <Animated.View
-                    style={[styles.content, animated]}
-                >
+                <Animated.View style={[styles.content, !expanded && animated]}>
                     <TeamSidebar
                         iconPad={canAddOtherServers}
                         hasMoreThanOneTeam={props.hasMoreThanOneTeam}
@@ -218,16 +257,33 @@ const ChannelListScreen = (props: ChannelProps) => {
                         moreThanOneTeam={props.hasMoreThanOneTeam}
                         hasChannels={props.hasChannels}
                     />
-                    {isTablet && props.hasChannels &&
+                </Animated.View>
+            </View>
+        </View>
+    );
+
+    return (
+        <Animated.View
+            entering={FadeIn.duration(350)}
+            style={styles.flex}
+            testID='channel_list.screen'
+        >
+            <View style={styles.content}>
+                {expanded ? <Portal hostName={listHost}>{navigationList}</Portal> : navigationList}
+                {(isTablet || expandedOptIn) && props.hasChannels &&
+                <View
+                    testID='duo.home.conversation'
+                    style={[styles.flex, !isTablet && !expanded && styles.hidden]}
+                >
                     <AdditionalTabletView/>
-                    }
-                    {props.showIncomingCalls && !isTablet &&
+                </View>
+                }
+                {props.showIncomingCalls && !isTablet && !expanded &&
                     <FloatingCallContainer
                         showIncomingCalls={props.showIncomingCalls}
                         channelsScreen={true}
                     />
-                    }
-                </Animated.View>
+                }
             </View>
         </Animated.View>
     );

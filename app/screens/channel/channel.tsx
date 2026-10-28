@@ -15,6 +15,7 @@ import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
+import {useExpandedNavigation} from '@screens/home/expanded_navigation';
 import {navigateBack} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {useCurrentScreen} from '@store/navigation_store';
@@ -67,6 +68,7 @@ const Channel = ({
 }: ChannelProps) => {
     useGMasDMNotice(currentUserId, channelType, dismissedGMasDMNotice, hasGMasDMFeature);
     const isTablet = useIsTablet();
+    const {active: expanded} = useExpandedNavigation();
     const insets = useSafeAreaInsets();
     const [shouldRenderPosts, setShouldRenderPosts] = useState(false);
     const switchingTeam = useTeamSwitch();
@@ -77,12 +79,15 @@ const Channel = ({
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
     const currentScreen = useCurrentScreen();
     const isVisible = useMemo(() => {
+        if (isTabletView && !isTablet) {
+            return expanded && currentScreen === Screens.CHANNEL_LIST;
+        }
         if (isTablet) {
             return currentScreen === Screens.CHANNEL_LIST;
         }
 
         return currentScreen === Screens.CHANNEL;
-    }, [currentScreen, isTablet]);
+    }, [currentScreen, isTablet, isTabletView, expanded]);
 
     const safeAreaViewEdges: Edge[] = useMemo(() => {
         if (isTablet) {
