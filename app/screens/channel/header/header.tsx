@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
 
 import {useAgentsConfig} from '@agents/store/agents_config';
@@ -31,11 +31,21 @@ import {isDMChannel, isTypeDMorGM} from '@utils/channel';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import {useAdaptiveControls} from '../adaptive_controls';
+import SideControls from '../adaptive_controls/side_controls';
+
 import ChannelHeaderBookmarks from './bookmarks';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
 import type {NavigationButtonProps} from '@components/navigation_button';
 import type {ResolvedChannelAttribute} from '@utils/channel_attributes';
+
+const adaptiveMessages = defineMessages({
+    back: {id: 'channel.adaptive.back', defaultMessage: 'Back'},
+    playbooks: {id: 'channel.adaptive.playbooks', defaultMessage: 'Playbooks'},
+    call: {id: 'channel.adaptive.call', defaultMessage: 'Call'},
+    overflow: {id: 'channel.adaptive.overflow', defaultMessage: 'More channel actions'},
+});
 
 type ChannelProps = {
     canAddBookmarks: boolean;
@@ -120,6 +130,8 @@ const ChannelHeader = ({
     channelAttributes,
 }: ChannelProps) => {
     const intl = useIntl();
+    const {placement} = useAdaptiveControls();
+    const sideControls = placement !== 'horizontal';
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -331,16 +343,38 @@ const ChannelHeader = ({
     }, [channelId, serverUrl, isPlaybooksEnabled]);
 
     const showBookmarkBar = isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks;
+    const sideButtons = rightButtons.map((button) => {
+        let label = adaptiveMessages.call;
+        if (button.id === 'playbooks') {
+            label = adaptiveMessages.playbooks;
+        } else if (button.id === 'channel-quick-actions') {
+            label = adaptiveMessages.overflow;
+        }
+        return {...button, accessibilityLabel: button.accessibilityLabel ?? intl.formatMessage(label)};
+    });
 
     return (
         <>
+            {sideControls &&
+            <SideControls
+                buttons={sideButtons}
+                backButton={(!isTablet || !isTabletView) ? {
+                    id: 'back',
+                    iconName: 'arrow-left',
+                    accessibilityLabel: intl.formatMessage(adaptiveMessages.back),
+                    onPress: onBackPress,
+                    testID: 'channel.adaptive.back',
+                } : undefined}
+                badge={leftComponent}
+            />
+            }
             <NavigationHeader
                 isLargeTitle={false}
-                leftComponent={leftComponent}
+                leftComponent={sideControls ? undefined : leftComponent}
                 onBackPress={onBackPress}
                 onTitlePress={onTitlePress}
-                rightButtons={rightButtons}
-                showBackButton={!isTablet || !isTabletView}
+                rightButtons={sideControls ? undefined : rightButtons}
+                showBackButton={!sideControls && (!isTablet || !isTabletView)}
                 subtitle={subtitle}
                 subtitleCompanion={subtitleCompanion}
                 subtitleComponent={subtitleComponent}

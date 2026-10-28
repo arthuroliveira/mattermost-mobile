@@ -19,6 +19,7 @@ import {navigateBack} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {useCurrentScreen} from '@store/navigation_store';
 
+import AdaptiveChannelLayout from './adaptive_controls';
 import ChannelContent from './channel_content';
 import ChannelHeader from './header';
 import useGMasDMNotice from './use_gm_as_dm_notice';
@@ -137,33 +138,35 @@ const Channel = ({
             testID='channel.screen'
             onLayout={onLayout}
         >
-            <ChannelHeader
-                channelId={channelId}
-                callsEnabledInChannel={isCallsEnabledInChannel}
-                groupCallsAllowed={groupCallsAllowed}
-                isTabletView={isTabletView}
-                shouldRenderBookmarks={shouldRender}
-                shouldRenderChannelBanner={includeChannelBanner}
-            />
-            {shouldRender && (
-                <ChannelContent
+            <AdaptiveChannelLayout>
+                <ChannelHeader
                     channelId={channelId}
-                    marginTop={marginTop}
-                    scheduledPostCount={scheduledPostCount}
-                    containerHeight={containerHeight}
-                    enabled={isVisible}
+                    callsEnabledInChannel={isCallsEnabledInChannel}
+                    groupCallsAllowed={groupCallsAllowed}
+                    isTabletView={isTabletView}
+                    shouldRenderBookmarks={shouldRender}
+                    shouldRenderChannelBanner={includeChannelBanner}
                 />
-            )}
-            {showFloatingCallContainer && shouldRender &&
-            <FloatingCallContainer
-                channelId={channelId}
-                showJoinCallBanner={showJoinCallBanner}
-                showIncomingCalls={showIncomingCalls}
-                isInACall={isInACall}
-                includeBookmarkBar={includeBookmarkBar}
-                includeChannelBanner={includeChannelBanner}
-            />
-            }
+                {shouldRender && (
+                    <ChannelContent
+                        channelId={channelId}
+                        marginTop={marginTop}
+                        scheduledPostCount={scheduledPostCount}
+                        containerHeight={containerHeight}
+                        enabled={isVisible}
+                    />
+                )}
+                {showFloatingCallContainer && shouldRender &&
+                <FloatingCallContainer
+                    channelId={channelId}
+                    showJoinCallBanner={showJoinCallBanner}
+                    showIncomingCalls={showIncomingCalls}
+                    isInACall={isInACall}
+                    includeBookmarkBar={includeBookmarkBar}
+                    includeChannelBanner={includeChannelBanner}
+                />
+                }
+            </AdaptiveChannelLayout>
         </SafeAreaView>
     );
 };

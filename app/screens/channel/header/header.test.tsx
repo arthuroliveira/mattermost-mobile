@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PortalProvider} from '@gorhom/portal';
 import React, {type ComponentProps} from 'react';
 
+import LocalConfig from '@assets/config.json';
 import {useNavigationHeaderCallButtonForDM} from '@calls/hooks';
 import {getCallsConfig} from '@calls/state';
 import {DefaultCallsConfig} from '@calls/types/calls';
@@ -11,8 +13,12 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
+import {bottomSheet, navigateBack} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {renderWithIntl, waitFor} from '@test/intl-test-helper';
+import {act, fireEvent, renderWithIntl, waitFor} from '@test/intl-test-helper';
+
+import AdaptiveChannelLayout from '../adaptive_controls';
+import {setDevelopmentOverride} from '../adaptive_controls/development';
 
 import ChannelHeader from './header';
 
@@ -79,6 +85,33 @@ describe('ChannelHeader', () => {
         props.callsEnabledInChannel = true;
         props.groupCallsAllowed = true;
     }
+
+    it('should relocate actual header actions once and retain the existing overflow and back handlers', () => {
+        LocalConfig.EnableDuoAdaptiveControls = true;
+        const props = getBaseProps();
+        const screen = renderWithIntl(
+            <PortalProvider>
+                <AdaptiveChannelLayout>
+                    <ChannelHeader {...props}/>
+                </AdaptiveChannelLayout>
+            </PortalProvider>,
+        );
+        fireEvent(screen.getByTestId('channel.adaptive.shell'), 'layout', {nativeEvent: {layout: {width: 800, height: 600}}});
+        act(() => setDevelopmentOverride('side-start'));
+        expect(screen.getByTestId('navigation-header')).toHaveProp('rightButtons', undefined);
+        expect(screen.getByTestId('navigation-header')).toHaveProp('showBackButton', false);
+        expect(screen.getByTestId('navigation-header')).toHaveProp('title', 'Test Channel');
+        expect(screen.getAllByLabelText('More channel actions')).toHaveLength(1);
+        expect(screen.getByLabelText('Playbooks')).toBeTruthy();
+        fireEvent.press(screen.getByLabelText('More channel actions'));
+        expect(bottomSheet).toHaveBeenCalledTimes(1);
+        fireEvent.press(screen.getByLabelText('Back'));
+        expect(navigateBack).toHaveBeenCalledTimes(1);
+        act(() => setDevelopmentOverride('auto'));
+        expect(screen.queryByLabelText('More channel actions')).toBeNull();
+        expect(getRightButtons(screen.getByTestId('navigation-header'))).toHaveLength(2);
+        LocalConfig.EnableDuoAdaptiveControls = false;
+    });
 
     function getRightButtons(navHeader: {props: unknown}) {
         return (navHeader.props as ComponentProps<typeof NavigationHeader>).rightButtons;

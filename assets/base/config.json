@@ -30,6 +30,7 @@
     "ExperimentalNormalizeMarkdownLinks": false,
     "CustomRequestHeaders": {},
     "CollectNetworkMetrics": false,
+    "EnableDuoAdaptiveControls": false,
     "EnablePostListPerformance": false,
     "EnableObservableProfiling": false
 }
