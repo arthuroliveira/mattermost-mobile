@@ -385,6 +385,7 @@ PODS:
     - fmt
     - glog
     - hermes-engine
+    - RaTeXRuntime (= 0.1.4)
     - RCT-Folly
     - RCT-Folly/Fabric
     - RCTRequired
@@ -406,6 +407,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - RaTeXRuntime (0.1.4)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -4042,6 +4044,7 @@ DEPENDENCIES:
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - OpenGraph (= 1.4.1)
   - ratex-react-native (from `../node_modules/ratex-react-native`)
+  - RaTeXRuntime (from `../node_modules/ratex-react-native`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
@@ -4250,6 +4253,8 @@ EXTERNAL SOURCES:
   NitroModules:
     :path: "../node_modules/react-native-nitro-modules"
   ratex-react-native:
+    :path: "../node_modules/ratex-react-native"
+  RaTeXRuntime:
     :path: "../node_modules/ratex-react-native"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
@@ -4496,7 +4501,7 @@ SPEC CHECKSUMS:
   fmt: 530618a01105dae0fa3a2f27c81ae11fa8f67eac
   Gekidou: 9ac6db6670ad1377704998069c8a2f9e1a0ee2b4
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
-  hermes-engine: f069ae87099ec6027a727dbebbd48a208405d92d
+  hermes-engine: 73fc96199481cce7b0f67b41e414c3d5f89ef073
   KituraContracts: e845e60dc8627ad0a76fa55ef20a45451d8f830b
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   livekit-react-native: fdecaea86ea91c7943c56ada4ab4bf9f22ee6ff3
@@ -4510,7 +4515,8 @@ SPEC CHECKSUMS:
   NitroBackgroundTimer: ca9c6ce4aace694da8dc082dbe202e14ae8b311c
   NitroModules: d2038959f7d0a9bf7b6f87e9a7c18da8b13311ff
   OpenGraph: 596722bb7f112d2dabcdb284cb817f01341a7540
-  ratex-react-native: 11d24a2012f15ab1ec536dd3e04064c21ee4f9a4
+  ratex-react-native: 85edfcd479004b913a1374f971f536b7282dc4be
+  RaTeXRuntime: 63c860a7f4dce706b5ea6b0c0d949ba1bb7e3d65
   RCT-Folly: b29feb752b08042c62badaef7d453f3bb5e6ae23
   RCTDeprecation: c7d33f6bc08dbb8be7dfa70d219bfb034480a406
   RCTRequired: 42b13c9504609bae9a9f65673a6b4fcbd8d07bd1
@@ -4624,6 +4630,6 @@ SPEC CHECKSUMS:
   WebRTC-SDK: 1d7fc2ae91da6edd63e25f3882ff24f86a8d9d8b
   Yoga: e9fea23bf9b2766818ce9a8df72f584bf5ad36cd
 
-PODFILE CHECKSUM: 63587a12789a0ab2844982736e80daacdb317d76
+PODFILE CHECKSUM: d37355fdea59716d46446ca54930f9b6574b7af2
 
 COCOAPODS: 1.16.1

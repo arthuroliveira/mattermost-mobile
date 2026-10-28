@@ -1,10 +1,38 @@
+diff --git a/node_modules/ratex-react-native/RaTeXRuntime.c b/node_modules/ratex-react-native/RaTeXRuntime.c
+new file mode 100644
+index 0000000..dd4d6d3
+--- /dev/null
++++ b/node_modules/ratex-react-native/RaTeXRuntime.c
+@@ -0,0 +1,2 @@
++// The runtime implementation is supplied by the vendored Rust static library.
++void mattermost_ratex_runtime_anchor(void) {}
+diff --git a/node_modules/ratex-react-native/RaTeXRuntime.podspec b/node_modules/ratex-react-native/RaTeXRuntime.podspec
+new file mode 100644
+index 0000000..20f41ce
+--- /dev/null
++++ b/node_modules/ratex-react-native/RaTeXRuntime.podspec
+@@ -0,0 +1,14 @@
++Pod::Spec.new do |s|
++  s.name = 'RaTeXRuntime'
++  s.version = '0.1.4'
++  s.summary = 'Dynamic wrapper for the RaTeX Rust runtime'
++  s.homepage = 'https://github.com/erweixin/RaTeX'
++  s.license = 'MIT'
++  s.author = 'Mattermost'
++  s.source = { :git => 'https://github.com/erweixin/RaTeX.git', :tag => s.version.to_s }
++  s.platform = :ios, '18.0'
++  s.source_files = 'RaTeXRuntime.c'
++  s.vendored_frameworks = 'ios/RaTeX.xcframework'
++  # Retain the Rust FFI exports consumed by the separate React Native bridge.
++  s.pod_target_xcconfig = { 'OTHER_LDFLAGS' => '$(inherited) -all_load' }
++end
 diff --git a/node_modules/ratex-react-native/ios/RaTeXViewManager.mm b/node_modules/ratex-react-native/ios/RaTeXViewManager.mm
-index 10323ea..99d35a5 100644
+index 00fbe5c..d22a4cc 100644
 --- a/node_modules/ratex-react-native/ios/RaTeXViewManager.mm
 +++ b/node_modules/ratex-react-native/ios/RaTeXViewManager.mm
-@@ -14,7 +14,11 @@
+@@ -17,7 +17,11 @@
  #endif
- 
+
  // Swift-generated header (module name derived from podspec/target name)
 -#import "ratex_react_native-Swift.h"
 +#if __has_include("ratex_react_native-Swift.h")
@@ -12,16 +40,16 @@ index 10323ea..99d35a5 100644
 +#else
 +#import <ratex_react_native/ratex_react_native-Swift.h>
 +#endif
- 
+
  // ---------------------------------------------------------------------------
  // MARK: - New Architecture (Fabric)
 diff --git a/node_modules/ratex-react-native/ratex-react-native.podspec b/node_modules/ratex-react-native/ratex-react-native.podspec
-index 09ce3d9..7e4bc0c 100644
+index 09ce3d9..1cc80b5 100644
 --- a/node_modules/ratex-react-native/ratex-react-native.podspec
 +++ b/node_modules/ratex-react-native/ratex-react-native.podspec
-@@ -13,8 +13,23 @@ Pod::Spec.new do |s|
+@@ -13,11 +13,26 @@ Pod::Spec.new do |s|
    s.source         = { :git => "https://github.com/erweixin/RaTeX.git", :tag => s.version.to_s }
- 
+
    # Swift source files + ObjC++ bridge
 -  s.source_files   = "ios/**/*.{h,m,mm,swift}"
 +  s.source_files   = "ios/*.{h,m,mm,swift}"
@@ -41,6 +69,10 @@ index 09ce3d9..7e4bc0c 100644
 +  s.user_target_xcconfig = {
 +    "HEADER_SEARCH_PATHS" => '"${PODS_CONFIGURATION_BUILD_DIR}/ratex-react-native/Swift Compatibility Header"',
 +  }
- 
+
    # Prebuilt static library (libratex_ffi.a) packaged as XCFramework
-   s.vendored_frameworks = "ios/RaTeX.xcframework"
+-  s.vendored_frameworks = "ios/RaTeX.xcframework"
++  s.dependency "RaTeXRuntime", "0.1.4"
+
+   # KaTeX fonts — loaded at runtime from this bundle
+   s.resource_bundles = {
