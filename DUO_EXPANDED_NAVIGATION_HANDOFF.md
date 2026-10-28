@@ -169,6 +169,64 @@ Minimal Mac checklist (no automatic distribution step):
 6. Select every actual primary tab from Home and from a pushed conversation; verify selected state, badges and permission-sensitive content, no duplicate bottom tabs, no new Home stack. Include cold links directly to a thread.
 7. Keyboard open: rail label taps work on first tap; composer/send remain adjacent to posts. Test short-height overflow, large text, VoiceOver, RTL and left/right safe areas. Capture real screenshots/video and failures for independent review.
 
+## Authenticated navigator coverage remediation (t_5bc9561b)
+
+### Provenance and scope
+
+This section supersedes the original coverage gap, **not the original process history**. Original shell/root missing-module, import and bootstrap failures remain a **historical non-qualifying TDD exception**. They cannot be reconstructed as assertion REDs or backdated. No original commit was rewritten. The requested `cross-platform-build-handoffs` skill was unavailable; the card's explicit evidence contract was followed and `test-driven-development` was loaded.
+
+Starting candidate: `25904af168838c1f34cc9a7cd4fe2547a5258e99`. New test commit: `403c059d84e7cee25c44c0d6a810180e3455b8e1` (`test(duo): exercise real authenticated Stack and Tabs navigation`). The following documentation commit also moves one test comment to satisfy ESLint `lines-around-comment`; it does not change test behavior. The exact delivered HEAD is recorded in the reviewer comment and task completion metadata; resolve it locally with `git rev-parse HEAD`. This avoids pretending that a document can contain the hash of its own commit.
+
+**No production fix was necessary.** The eight new regressions pass against the existing implementation. This is **test-after coverage supported by post-hoc mutation/regression evidence**, not historical TDD and not a new production RED→GREEN claim. Harness bring-up initially failed on an unavailable matcher, fake `nextTick` cleanup timeout, and reading the linking store's partial initial state / omitting Expo's `__root` level; none of these is counted as behavioral RED. The test uses the hydrated navigation ref and leaves `nextTick` unfaked. A final explanatory comment introduced a lint-only error in the test commit because the shell sequence continued after ESLint; the subsequent documentation commit fixes that comment, and final checks are rerun. This sequencing is disclosed, not rewritten.
+
+Only two remediation files change: `app/screens/home/expanded_navigation/navigator.test.tsx` and this handoff. All temporary production mutations were restored byte-for-byte (`git diff --exit-code -- <four production paths>` returned 0 before the test commit; final diff against the starting candidate contains no production files).
+
+### What the integration suite actually mounts
+
+- Real Expo Router testing-library `renderRouter`, real root Stack, actual authenticated `_layout.tsx`, actual `(home)/_layout.tsx` Tabs and Home redirect, actual `TabBar` press handlers, real portals, real focus, real Stack/Tabs reducers/actions, actual shared Header/ExpandedBack, actual `ThreadRoute` header factory and `useAppNavigationHeader`. No dispatch spy, mocked Stack, mocked Tabs, mocked router.back or mocked focus substitutes the navigation path.
+- Authentication/database HOC and classification banner are stubbed. Database-backed tab indicator payloads are stubbed, while the actual tab Pressables, route options, selection and Search icon remain mounted. Home content/draft is synthetic. Channel/search-result/detail content uses a representative fixture with the shared app-header factory. Thread content is stubbed but its real route/header and `navigation.goBack()` are executed. Root app startup/services are not run; a real Expo Stack reproduces its navigator relationship. These local mocks are deliberately isolated to this integration suite rather than changing the global test setup.
+- Three cases push channel then thread above the existing Home navigator and press Home (already selected), Search or Mentions through the mounted physical-right rail. They assert the visible destination, selected accessibility state, unchanged root/authenticated Stack/Home route/Tabs keys, exactly one Home stack entry, and removal of pushed routes. Repeated compact/expanded transitions retain the selected tab and complete navigation state. Explicit primary selection intentionally pops the pushed stack; resize does not.
+- Three cases push thread/detail/search-result above channel and press the sole sidebar Back. The real stack returns exactly to the same channel route/state, not Home. Re-pushing and folding removes sidebar Back, restores exactly one visible standard header Back, and preserves the entire navigator state. Header Back returns to channel; expanding and pressing sidebar Back returns to Home, where no Back remains. Outgoing/unfocused headers cannot add another visible sidebar Back. The Back role and accessible name are checked.
+- Two cases verify root/Stack/Tabs state and mounted synthetic Home/draft identity across repeated wide/narrow transitions, exactly one set of actual primary controls, rail/bottom exclusivity, and wide ordinary-device bottom tabs with the opt-in off. Hidden retained Home bottom tabs are queried explicitly while a compact detail is pushed; this is not a claim that they are visible over the detail.
+
+### Reproducible post-hoc mutation/regression evidence
+
+Run from the implementation worktree. The exact focused command for **every** mutation and restoration was:
+
+```sh
+npx --no-install jest app/screens/home/expanded_navigation/navigator.test.tsx --runInBand --forceExit
+```
+
+For reproduction, apply exactly one temporary textual edit from this table, run that command, then reverse that edit before proceeding. Do not commit the mutations. These are sensitivity checks of existing behavior, not attempted production fixes.
+
+| Probe | Temporary edit | Actual result / qualifying assertion |
+| --- | --- | --- |
+| Reveal existing Home | In `app/screens/home/tab_bar/index.tsx`, replace `navigation.getParent()?.dispatch(StackActions.popTo('(home)'));` with a comment | Exit **1**; **1 failed / 7 passed**. Home selection expected `/channel_list`, received `/thread`. Search/Mentions still passed because changing the nested tab also focuses its navigator; the already-selected Home case specifically detects the missing reveal. |
+| True contextual Back | In `app/screens/home/expanded_navigation/back.tsx`, replace `onPress={onPress}` with `onPress={() => router.dismissAll()}` | Exit **1**; **3 failed / 5 passed**. Each contextual case expected `/channel`, received `/channel_list`; a Home shortcut is detected. |
+| Suppress duplicate header Back | In `app/components/navigation_header/header.tsx`, replace `{showBackButton && !primaryRailActive &&` with `{showBackButton &&` | Exit **1**; **3 failed / 5 passed**. `queryByTestId('navigation.header.back')` expected null but returned a mounted control while sidebar Back was present. |
+| Stable shell ancestry | In `app/screens/home/expanded_navigation/index.tsx`, add `key={String(active)}` to the View with `testID='duo.navigation.content'` | Exit **1**; **5 failed / 3 passed**. Complete state equality after resize failed with regenerated tab/route keys, including the synthetic Home continuity case. |
+
+Restoration proof:
+
+```sh
+git diff --exit-code -- \
+  app/screens/home/tab_bar/index.tsx \
+  app/screens/home/expanded_navigation/back.tsx \
+  app/components/navigation_header/header.tsx \
+  app/screens/home/expanded_navigation/index.tsx
+npx --no-install jest app/screens/home/expanded_navigation/navigator.test.tsx --runInBand --forceExit
+```
+
+Both exited **0**; **1 suite / 8 tests passed** after restoration. Focused runs emitted the explicit force-exit advisory, not `act(...)` or worker-teardown warnings. Raw local logs were written under `/home/hermes/.hermes/profiles/personal-builder/cache/scratch/duo-nav-{baseline,expanded,mutation-reveal,mutation-back,mutation-header,mutation-identity,restored}.log`; scratch logs are supplementary and may expire, so commands, mutations and observed assertions are recorded here durably.
+
+### Fresh Linux verification
+
+The full focused regression command in the earlier section was rerun with the same paths and `--maxWorkers=2 --forceExit --json`, writing `--outputFile="$TMPDIR/duo-nav-regression.json"`. **Exit 0: 19 suites passed, 179 tests passed, 2 pre-existing skipped, 181 total, zero failed.** This includes the eight new integration cases plus resize/navigation/header/tab/expanded suites. The broad run still emitted `act(...)` warnings and `A worker process has failed to exit gracefully`; forced exit remains disclosed and is not a clean-teardown claim.
+
+The exact changed-file ESLint command from the earlier section (the expanded-navigation directory includes the new test), full `npm run tsc`, `git diff --check`, and `git diff --check 5e7aed5c354dd294a78c9eb3e8e5f4027a78dbed..HEAD` pass with exit 0 after the comment correction. The final delivered revision is locally committed and clean. Original worktree remains `a3073863822ada07af16ede686bc5c02fa097ff5` with only pre-existing untracked `DUO_HANDOFF.md`; adaptive worktree remains clean at `5e7aed5c354dd294a78c9eb3e8e5f4027a78dbed`. No push, PR, merge, deploy, signing, publication, server/SDK change or other remote write was performed.
+
+**Limits unchanged:** React Native is rendered under Jest/Expo mocks, not an actual native device. No mobile MCP, Mac/Xcode build, native transition/freeze/detach validation, screenshot, real database draft/scroll/focus guarantee or Duo compatibility claim. Cold deep links before Home initialization remain outside this mounted-Home flow. The Mac checklist above remains mandatory. Existing reviewer `t_408a4d1d` must judge the exact remediated HEAD; the existing supervisor remains gated behind that review. The transparent historical exception should not cause a loop demanding impossible retrospective TDD; actual remaining defects and coverage gaps remain reviewable.
+
 ## Rollback
 
 Fast rollback is flag disable plus asset regeneration/reload. To remove the code on a new review branch, revert implementation `c3dd80b629ae24e5ba8160f230026411000a056e`, then policy `2f19b716cb5d5bdb1d5b3297c5d1a1b1981c2752`; handle the documentation commit separately. Do not reset, clean or switch the original/adaptive worktrees. Independent parent verification and any downstream lifecycle remain with the parent; this builder made no remote write.

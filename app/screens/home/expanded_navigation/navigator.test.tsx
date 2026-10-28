@@ -55,8 +55,8 @@ function Detail() {
     return <Text testID='detail.content'>{'Detail content'}</Text>;
 }
 
+// Real Stack relationship, without RootLayout's app initialization/services.
 const routes = {
-    // Real Stack relationship, without RootLayout's app initialization/services.
     _layout: () => <Stack screenOptions={{headerShown: false, animation: 'none'}}/>,
     '(authenticated)/_layout': AuthenticatedLayout,
     '(authenticated)/(home)/_layout': TabLayout,
