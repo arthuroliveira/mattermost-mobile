@@ -49,30 +49,12 @@ import React
         let workItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
             let (screen, bounds) = getWindowSize()
-            guard let screen = screen, let bounds = bounds else {return}
-
-            // Determine which dimensions to use
-            var width: CGFloat = 0
-            var height: CGFloat = 0
-
-            if UIDevice.current.userInterfaceIdiom == .pad {
-                // On iPad, use window bounds for Split View/Stage Manager
-                width = bounds.width
-                height = bounds.height
-            } else {
-                // On iPhone, use screen bounds for reliability
-                width = screen.width
-                height = screen.height
-            }
+            guard let screen = screen, let bounds = bounds, bounds.width > 0, bounds.height > 0 else { return }
 
             isSplitView(screen: screen, bounds: bounds)
-            
-            if width == 0 || height == 0 {
-                return
-            }
             delegate?.sendEvent(name: "DimensionsChanged", result: [
-                "width": width,
-                "height": height
+                "width": bounds.width,
+                "height": bounds.height
             ])
         }
         debounceWorkItem = workItem

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
 import {renderHook, act} from '@testing-library/react-native';
 import React from 'react';
 import {AppState, Keyboard} from 'react-native';
@@ -75,12 +76,24 @@ describe('device hooks', () => {
 
         it('should update dimensions on change', () => {
             const {result} = renderHook(() => useWindowDimensions());
+            jest.mocked(RNUtils.getWindowDimensions).mockReturnValueOnce({height: 1000, width: 800});
 
             act(() => {
                 mockEmitter.addListener.mock.calls[0][1]({height: 1000, width: 800});
             });
 
             expect(result.current).toEqual({height: 1000, width: 800});
+        });
+
+        it('should use the current window bounds when a resize event carries screen dimensions', () => {
+            const {result} = renderHook(() => useWindowDimensions());
+            jest.mocked(RNUtils.getWindowDimensions).mockReturnValueOnce({height: 900, width: 650});
+
+            act(() => {
+                mockEmitter.addListener.mock.calls[0][1]({height: 1000, width: 800});
+            });
+
+            expect(result.current).toEqual({height: 900, width: 650});
         });
     });
 

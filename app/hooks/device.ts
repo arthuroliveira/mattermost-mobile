@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import RNUtils, {type WindowDimensions} from '@mattermost/rnutils';
+import RNUtils from '@mattermost/rnutils';
 import React, {useEffect, useRef, useState, useContext} from 'react';
 import {AppState, Keyboard, NativeEventEmitter, Platform} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -37,8 +37,8 @@ export function useWindowDimensions() {
     const [dimensions, setDimensions] = useState(RNUtils.getWindowDimensions());
 
     useEffect(() => {
-        const listener = utilsEmitter.addListener('DimensionsChanged', (window: WindowDimensions) => {
-            setDimensions(window);
+        const listener = utilsEmitter.addListener('DimensionsChanged', () => {
+            setDimensions(RNUtils.getWindowDimensions());
         });
 
         return () => listener.remove();
