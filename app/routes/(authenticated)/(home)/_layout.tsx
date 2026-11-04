@@ -3,6 +3,7 @@
 
 import {Tabs} from 'expo-router';
 import React from 'react';
+import {defineMessages, useIntl} from 'react-intl';
 
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -15,7 +16,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const messages = defineMessages({
+    home: {id: 'mobile.tabs.home', defaultMessage: 'Home'},
+    search: {id: 'mobile.tabs.search', defaultMessage: 'Search'},
+    mentions: {id: 'mobile.tabs.mentions', defaultMessage: 'Mentions'},
+    saved: {id: 'mobile.tabs.saved', defaultMessage: 'Saved'},
+    account: {id: 'mobile.tabs.account', defaultMessage: 'Account'},
+});
+
 export default function TabLayout() {
+    const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -37,7 +47,8 @@ export default function TabLayout() {
             <Tabs.Screen
                 name={Screens.CHANNEL_LIST}
                 options={{
-                    title: 'Home',
+                    title: formatMessage(messages.home),
+                    tabBarAccessibilityLabel: formatMessage(messages.home),
                     href: '/(authenticated)/(home)',
                     tabBarButtonTestID: 'tab_bar.home.tab',
                     freezeOnBlur: false,
@@ -47,7 +58,8 @@ export default function TabLayout() {
             <Tabs.Screen
                 name={Screens.SEARCH}
                 options={{
-                    title: 'Search',
+                    title: formatMessage(messages.search),
+                    tabBarAccessibilityLabel: formatMessage(messages.search),
                     href: null,
                     tabBarButtonTestID: 'tab_bar.search.tab',
                     freezeOnBlur: true,
@@ -56,7 +68,8 @@ export default function TabLayout() {
             <Tabs.Screen
                 name={Screens.MENTIONS}
                 options={{
-                    title: 'Mentions',
+                    title: formatMessage(messages.mentions),
+                    tabBarAccessibilityLabel: formatMessage(messages.mentions),
                     href: null,
                     tabBarButtonTestID: 'tab_bar.mentions.tab',
                     freezeOnBlur: true,
@@ -65,7 +78,8 @@ export default function TabLayout() {
             <Tabs.Screen
                 name={Screens.SAVED_MESSAGES}
                 options={{
-                    title: 'Saved',
+                    title: formatMessage(messages.saved),
+                    tabBarAccessibilityLabel: formatMessage(messages.saved),
                     href: null,
                     tabBarButtonTestID: 'tab_bar.saved_messages.tab',
                     freezeOnBlur: true,
@@ -74,7 +88,8 @@ export default function TabLayout() {
             <Tabs.Screen
                 name={Screens.ACCOUNT}
                 options={{
-                    title: 'Account',
+                    title: formatMessage(messages.account),
+                    tabBarAccessibilityLabel: formatMessage(messages.account),
                     href: null,
                     tabBarButtonTestID: 'tab_bar.account.tab',
                     freezeOnBlur: true,

@@ -4,7 +4,8 @@
 import {Portal} from '@gorhom/portal';
 import {StackActions} from '@react-navigation/native';
 import React, {useEffect, useMemo, useState} from 'react';
-import {DeviceEventEmitter, View, Pressable, ScrollView} from 'react-native';
+import {defineMessages, useIntl} from 'react-intl';
+import {DeviceEventEmitter, View, Pressable, type PressableProps, ScrollView} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -20,6 +21,7 @@ import SavedMessages from './saved_messages';
 import Search from './search';
 
 import type {BottomTabBarProps} from '@react-navigation/bottom-tabs';
+import type {UnreadMessages} from '@typings/database/subscriptions';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -66,13 +68,59 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const TabComponents: Record<string, React.ComponentType<{isFocused: boolean; theme: Theme}>> = {
+type TabIconProps = {isFocused: boolean; theme: Theme; onUnreadChange?: (unread: UnreadMessages) => void};
+
+const TabComponents: Record<string, React.ComponentType<TabIconProps>> = {
     [Screens.ACCOUNT]: Account,
     [Screens.CHANNEL_LIST]: Home,
     [Screens.MENTIONS]: Mentions,
     [Screens.SAVED_MESSAGES]: SavedMessages,
     [Screens.SEARCH]: Search,
 };
+
+const messages = defineMessages({
+    unread: {id: 'mobile.tabs.unread', defaultMessage: 'Unread messages'},
+    mentions: {id: 'mobile.tabs.mention_count', defaultMessage: '{count, plural, one {# mention} other {# mentions}}'},
+    manyMentions: {id: 'mobile.tabs.many_mentions', defaultMessage: '99 or more mentions'},
+});
+
+function PrimaryTab({icon: Icon, isFocused, theme, ...props}: PressableProps & {
+    icon?: React.ComponentType<TabIconProps>;
+    isFocused: boolean;
+    theme: Theme;
+}) {
+    const {formatMessage} = useIntl();
+    const [unread, setUnread] = useState<UnreadMessages>();
+    let value;
+    if (unread?.mentions) {
+        value = unread.mentions >= 99 ? formatMessage(messages.manyMentions) : formatMessage(messages.mentions, {count: unread.mentions});
+    } else if (unread?.unread) {
+        value = formatMessage(messages.unread);
+    }
+
+    return (
+        <Pressable
+            {...props}
+            accessibilityRole='button'
+            accessibilityState={isFocused ? {selected: true} : {}}
+            accessibilityValue={value ? {text: value} : undefined}
+        >
+            <View
+                accessible={false}
+                accessibilityElementsHidden={true}
+                importantForAccessibility='no-hide-descendants'
+            >
+                {Icon &&
+                <Icon
+                    isFocused={isFocused}
+                    theme={theme}
+                    onUnreadChange={setUnread}
+                />
+                }
+            </View>
+        </Pressable>
+    );
+}
 
 function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {theme: Theme}) {
     const {active, railHost} = useExpandedNavigation();
@@ -176,30 +224,18 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
             });
         };
 
-        const renderOption = () => {
-            // Route names now match screen constants directly
-            const Component = TabComponents[route.name];
-            const props = {isFocused, theme};
-            if (Component) {
-                return <Component {...props}/>;
-            }
-
-            return null;
-        };
-
         return (
-            <Pressable
+            <PrimaryTab
                 key={route.name}
-                accessibilityRole='button'
-                accessibilityState={isFocused ? {selected: true} : {}}
+                icon={TabComponents[route.name]}
+                isFocused={isFocused}
+                theme={theme}
                 accessibilityLabel={options.tabBarAccessibilityLabel}
                 testID={options.tabBarButtonTestID}
                 onPress={onPress}
                 onLongPress={onLongPress}
                 style={({pressed}) => [active ? style.railItem : style.item, pressed && style.pressed]}
-            >
-                {renderOption()}
-            </Pressable>
+            />
         );
     });
 

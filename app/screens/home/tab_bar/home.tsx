@@ -22,6 +22,7 @@ import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscri
 type Props = {
     isFocused: boolean;
     theme: Theme;
+    onUnreadChange?: (unread: UnreadMessages) => void;
 }
 
 const HOME_TOTAL_MENTIONS_EVENT = 'home_total_mentions_event';
@@ -118,9 +119,13 @@ const serversObserver = async (servers: ServersModel[]) => {
     }
 };
 
-const Home = ({isFocused, theme}: Props) => {
+const Home = ({isFocused, theme, onUnreadChange}: Props) => {
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
     const appState = useAppState();
+
+    useEffect(() => {
+        onUnreadChange?.(total);
+    }, [onUnreadChange, total]);
 
     useEffect(() => {
         const totalMentionsEventListener = () => {
