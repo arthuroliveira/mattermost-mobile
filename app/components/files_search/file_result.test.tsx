@@ -8,6 +8,7 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import File from '@components/files/file';
+import FileOptionsIcon from '@components/files/file_options_icon';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import FileResult from './file_result';
@@ -41,9 +42,13 @@ it('should size the real file card and anchor its actions inside a measured narr
     fireEvent.press(screen.getByText(fileInfo.name));
     expect(onPress).toHaveBeenCalledWith(3);
     jest.spyOn(cell.instance, 'measureInWindow').mockImplementation((callback: (x: number, y: number, width: number, height: number) => void) => callback(340, 100, 280, 60));
-    fireEvent(screen.UNSAFE_getByType(File.type), 'optionsPress', fileInfo);
+    fireEvent.press(screen.UNSAFE_getByType(FileOptionsIcon));
     expect(onOptionsPress).toHaveBeenCalledWith(fileInfo);
     expect(StyleSheet.flatten(screen.UNSAFE_getByType(Overlay).props.overlayStyle)).toEqual(expect.objectContaining({left: 368, width: 252, marginRight: 0}));
     fireEvent(cell, 'layout', {nativeEvent: {layout: {width: 200, height: 60}}});
     expect(screen.UNSAFE_getByType(File.type).props.wrapperWidth).toBe(200);
+    expect(screen.UNSAFE_queryByType(Overlay)).toBeNull();
+    jest.spyOn(cell.instance, 'measureInWindow').mockImplementation((callback: (x: number, y: number, width: number, height: number) => void) => callback(340, 100, 200, 60));
+    fireEvent.press(screen.UNSAFE_getByType(FileOptionsIcon));
+    expect(StyleSheet.flatten(screen.UNSAFE_getByType(Overlay).props.overlayStyle)).toEqual(expect.objectContaining({left: 340, width: 200}));
 });

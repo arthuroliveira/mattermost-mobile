@@ -52,6 +52,9 @@ const FileResult = ({
     const onLayout = useCallback(({nativeEvent: {layout}}: LayoutChangeEvent) => {
         // This view has already deducted the cell's horizontal margins.
         setWidth(layout.width);
+
+        // Window-anchored menus must be measured again after a pane reflow.
+        setShowOptions(false);
     }, []);
 
     const [showOptions, setShowOptions] = useState<boolean>(false);

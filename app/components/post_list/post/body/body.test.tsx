@@ -7,7 +7,7 @@ import {View} from 'react-native';
 import Files from '@components/files';
 import {Screens} from '@constants';
 import Preferences from '@constants/preferences';
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import Body from './body';
@@ -44,10 +44,11 @@ describe('Body attachment render state', () => {
         filesInfo?: FileInfo[];
         isRedactionVerified?: boolean;
         isPendingOrFailed?: boolean;
+        location?: React.ComponentProps<typeof Body>['location'];
     };
 
     const renderBody = (metadata: PostMetadata, options: Options = {}) => {
-        const {filesInfo = [], isRedactionVerified = true, isPendingOrFailed = false} = options;
+        const {filesInfo = [], isRedactionVerified = true, isPendingOrFailed = false, location = Screens.CHANNEL} = options;
         const post = TestHelper.fakePostModel({
             id: 'post-id',
             message: 'a message',
@@ -68,7 +69,7 @@ describe('Body attachment render state', () => {
                 isPostAddChannelMember={false}
                 isRedactionVerified={isRedactionVerified}
                 redactionRequiredEpoch={3}
-                location={Screens.CHANNEL}
+                location={location}
                 post={post}
                 theme={theme}
                 isChannelAutotranslated={false}
@@ -77,6 +78,16 @@ describe('Body attachment render state', () => {
     };
 
     const aFile = [{id: 'fileid', name: 'a.png', extension: 'png'} as FileInfo];
+
+    it('should supply the measured Search post body width to markdown/media and attachments across pane resize', () => {
+        const screen = renderBody({}, {filesInfo: aFile, location: Screens.SEARCH});
+        const body = screen.getByTestId('message');
+        for (const width of [280, 419]) {
+            fireEvent(body, 'layout', {nativeEvent: {layout: {width, height: 200}}});
+            expect(jest.mocked(Message).mock.calls.slice(-1)[0][0].layoutWidth).toBe(width);
+            expect(jest.mocked(Files).mock.calls.slice(-1)[0][0].layoutWidth).toBe(width);
+        }
+    });
 
     it('should render the placeholder when the post has redacted files', () => {
         const {getByTestId} = renderBody({redacted_file_count: 2} as PostMetadata);

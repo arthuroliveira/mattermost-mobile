@@ -6,12 +6,14 @@
 import React from 'react';
 import {FlatList, StyleSheet, View} from 'react-native';
 
+import FileResults from '@components/files_search/file_results';
 import Loading from '@components/loading';
 import {useWindowDimensions} from '@hooks/device';
 import {act, fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {TabTypes} from '@utils/search';
 
+import PostResults from './post_results';
 import Results from './results';
 
 jest.mock('@hooks/device', () => ({
@@ -99,6 +101,8 @@ it('should retain the selected Files page, query and real list instances/scroll 
         <Results
             {...props}
             selectedTab={TabTypes.FILES}
+            posts={[TestHelper.fakePostModel({id: 'post', message: 'pane query result', createAt: 1})]}
+            fileInfos={[{id: 'file', name: 'pane query attachment.bin', extension: 'bin', mime_type: 'application/octet-stream', size: 100} as FileInfo]}
         />,
     );
     resize(screen, 592);
@@ -113,6 +117,8 @@ it('should retain the selected Files page, query and real list instances/scroll 
         expect(screen.UNSAFE_getAllByType(FlatList)).toEqual(lists);
         expect(files._listRef._scrollMetrics.offset).toBe(137);
         expect(styles(screen)).toEqual(expect.arrayContaining([expect.objectContaining({width: width * 2, transform: [{translateX: -width}]})]));
-        expect(screen.getAllByText(/pane query/)).toHaveLength(2);
+        expect(screen.UNSAFE_getByType(PostResults.type).props.searchValue).toBe('pane query');
+        expect(screen.UNSAFE_getByType(FileResults.type).props.searchValue).toBe('pane query');
+        expect(screen.getByText('pane query attachment.bin')).toBeTruthy();
     }
 });

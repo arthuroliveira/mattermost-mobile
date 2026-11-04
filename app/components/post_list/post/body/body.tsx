@@ -159,7 +159,7 @@ const Body = ({
     }, [highlightReplyBar, isCRTEnabled, isFirstReply, isLastReply, isReplyPost, location, style]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-        if (location === Screens.SAVED_MESSAGES) {
+        if (location === Screens.SAVED_MESSAGES || location === Screens.SEARCH) {
             setLayoutWidth(e.nativeEvent.layout.width);
         }
     }, [location]);
