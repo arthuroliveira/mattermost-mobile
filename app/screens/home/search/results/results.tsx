@@ -1,15 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {Freeze} from 'react-freeze';
-import {StyleSheet, View} from 'react-native';
+import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import FileResults from '@components/files_search/file_results';
 import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
-import {useWindowDimensions} from '@hooks/device';
 import {TabTypes, type TabType} from '@utils/search';
 
 import PostResults from './post_results';
@@ -22,13 +21,17 @@ const duration = 250;
 
 const getStyles = (width: number) => {
     return StyleSheet.create({
+        viewport: {
+            flex: 1,
+            overflow: 'hidden',
+        },
         container: {
             flex: 1,
             flexDirection: 'row',
             width: width * 2,
         },
         result: {
-            flex: 1,
+            flexShrink: 0,
             width,
         },
         loading: {
@@ -74,7 +77,10 @@ const Results = ({
     searchValue,
     selectedTab,
 }: Props) => {
-    const {width} = useWindowDimensions();
+    const [width, setWidth] = useState(0);
+    const onLayout = useCallback(({nativeEvent: {layout}}: LayoutChangeEvent) => {
+        setWidth(layout.width);
+    }, []);
     const theme = useTheme();
     const styles = useMemo(() => getStyles(width), [width]);
 
@@ -95,7 +101,10 @@ const Results = ({
     ), [scrollPaddingTop]);
 
     return (
-        <>
+        <View
+            onLayout={onLayout}
+            style={styles.viewport}
+        >
             {loading &&
                 <Loading
                     color={theme.buttonBg}
@@ -134,7 +143,7 @@ const Results = ({
                 </View>
             </Animated.View>
             }
-        </>
+        </View>
     );
 };
 

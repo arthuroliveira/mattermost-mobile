@@ -2,17 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 
 import File from '@components/files/file';
-import {useIsTablet, useWindowDimensions} from '@hooks/device';
-import {getViewPortWidth} from '@utils/images';
+import {useWindowDimensions} from '@hooks/device';
 
 import Options from './file_options/file_options';
 
 import type {GalleryAction} from '@typings/screens/gallery';
 
-export type XyOffset = {x: number; y: number} | undefined;
+export type XyOffset = {x: number; y: number; width: number} | undefined;
 
 const styles = StyleSheet.create({
     container: {
@@ -49,8 +48,11 @@ const FileResult = ({
     updateFileForGallery,
 }: Props) => {
     const elementsRef = useRef<View | null>(null);
-    const isTablet = useIsTablet();
-    const isReplyPost = false;
+    const [width, setWidth] = useState(0);
+    const onLayout = useCallback(({nativeEvent: {layout}}: LayoutChangeEvent) => {
+        // This view has already deducted the cell's horizontal margins.
+        setWidth(layout.width);
+    }, []);
 
     const [showOptions, setShowOptions] = useState<boolean>(false);
     const [openUp, setOpenUp] = useState<boolean>(false);
@@ -58,11 +60,11 @@ const FileResult = ({
     const {height} = useWindowDimensions();
 
     const handleOptionsPress = useCallback((fInfo: FileInfo) => {
-        elementsRef.current?.measureInWindow((x, y, _, h) => {
+        elementsRef.current?.measureInWindow((x, y, cellWidth, h) => {
             const openUpwards = (y > height / 2);
             const offsetY = openUpwards ? (y + (h / 2)) : (y - (h / 2));
             setOpenUp(openUpwards);
-            setXYoffset({x, y: offsetY});
+            setXYoffset({x, y: offsetY, width: cellWidth});
             setShowOptions(true);
             onOptionsPress(fInfo);
         });
@@ -81,6 +83,7 @@ const FileResult = ({
                 ref={elementsRef}
                 style={styles.container}
                 collapsable={false}
+                onLayout={onLayout}
             >
                 <File
                     asCard={true}
@@ -97,7 +100,7 @@ const FileResult = ({
                     optionSelected={showOptions}
                     showDate={true}
                     updateFileForGallery={updateFileForGallery}
-                    wrapperWidth={(getViewPortWidth(isReplyPost, isTablet) - 6)}
+                    wrapperWidth={width}
                 />
             </View>
             {showOptions && Boolean(xyOffset) &&

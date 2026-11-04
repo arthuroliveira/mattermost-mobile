@@ -25,9 +25,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderWidth: 1,
         paddingLeft: 20,
         position: 'absolute',
-        right: 20,
         width: 252,
-        marginRight: 20,
+        marginRight: 0,
         shadowColor: theme.centerChannelColor,
         shadowOffset: {
             width: 0,
@@ -86,7 +85,11 @@ const FileOptions = ({
     const overlayStyle = useMemo(() => ({
         marginTop: openUp ? 0 : openDownMargin,
         top: xyOffset?.y ? xyOffset.y - (openUp ? ITEM_HEIGHT * numOptions : 0) : 0,
-        right: xyOffset?.x,
+
+        // measureInWindow and this modal overlay both use window coordinates.
+        // Right-align to the cell, not to the full window's right edge.
+        left: (xyOffset?.x ?? 0) + Math.max(0, (xyOffset?.width ?? 0) - 252),
+        width: Math.min(252, xyOffset?.width ?? 252),
     }), [numOptions, openUp, xyOffset]);
 
     return (
