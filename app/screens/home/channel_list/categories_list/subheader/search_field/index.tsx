@@ -30,6 +30,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.sidebarText, 0.72),
     },
     input: {
+        flex: 1,
+        minWidth: 0,
         color: changeOpacity(theme.sidebarText, 0.72),
         marginLeft: 5,
         marginTop: 1,
@@ -58,6 +60,8 @@ const SearchField = () => {
                     style={styles.icon}
                 />
                 <FormattedText
+                    numberOfLines={1}
+                    ellipsizeMode='tail'
                     defaultMessage='Find channels...'
                     id='channel_list.find_channels'
                     style={styles.input}

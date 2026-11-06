@@ -22,6 +22,7 @@ import {useIsInitialSync} from '@hooks/is_initial_sync';
 import {useTeamsLoading} from '@hooks/teams_loading';
 import PlaybooksButton from '@playbooks/components/playbooks_button';
 import {getDefaultTeamId} from '@queries/servers/team';
+import {useExpandedNavigation} from '@screens/home/expanded_navigation';
 import {logDebug} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -33,6 +34,7 @@ import SubHeader from './subheader';
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
+        minWidth: 0,
         backgroundColor: theme.sidebarBg,
         paddingTop: 10,
     },
@@ -62,6 +64,7 @@ const getTabletWidth = (moreThanOneTeam: boolean) => {
 };
 
 const edges: Edge[] = ['right'];
+const expandedEdges: Edge[] = [];
 
 const CategoriesList = ({
     hasChannels,
@@ -82,6 +85,7 @@ const CategoriesList = ({
     const styles = getStyleSheet(theme);
     const {width} = useWindowDimensions();
     const isTablet = useIsTablet();
+    const {active: expanded} = useExpandedNavigation();
     const isTeamLoading = useTeamsLoading(serverUrl);
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(moreThanOneTeam) : 0);
     const [activeScreen, setActiveScreen] = useState<ScreenType>(isTablet && lastChannelId ? lastChannelId : Screens.CHANNEL);
@@ -136,6 +140,9 @@ const CategoriesList = ({
     }, []);
 
     const tabletStyle = useAnimatedStyle(() => {
+        if (expanded) {
+            return {maxWidth: '100%'};
+        }
         if (!isTablet) {
             return {
                 maxWidth: width,
@@ -143,7 +150,7 @@ const CategoriesList = ({
         }
 
         return {maxWidth: withTiming(tabletWidth.value, {duration: 350})};
-    }, [isTablet, width]);
+    }, [expanded, isTablet, width]);
 
     const threadButtonComponent = useMemo(() => {
         if (!isCRTEnabled) {
@@ -229,7 +236,8 @@ const CategoriesList = ({
 
         return (
             <SafeAreaView
-                edges={edges}
+                testID='channel_list.categories.safe_area'
+                edges={expanded ? expandedEdges : edges}
                 style={styles.flex}
             >
                 <SubHeader/>
@@ -243,7 +251,7 @@ const CategoriesList = ({
                 />
             </SafeAreaView>
         );
-    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isInitialSync, isTablet, isTeamLoading, listHeight, onListLayout, playbooksButtonComponent, styles.flex, threadButtonComponent]);
+    }, [agentsButtonComponent, draftsButtonComponent, expanded, hasChannels, isInitialSync, isTablet, isTeamLoading, listHeight, onListLayout, playbooksButtonComponent, styles.flex, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>

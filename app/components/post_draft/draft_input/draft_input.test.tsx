@@ -1,13 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PortalProvider} from '@gorhom/portal';
 import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
+import LocalConfig from '@assets/config.json';
 import {License, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostPriorityType} from '@constants/post';
 import NetworkManager from '@managers/network_manager';
+import ExpandedNavigation from '@screens/home/expanded_navigation';
 import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -95,6 +98,25 @@ describe('DraftInput', () => {
     });
 
     describe('Rendering', () => {
+        it('should let the composer fill the expanded chat pane without a second side inset', () => {
+            LocalConfig.EnableDuoAdaptiveControls = true;
+            try {
+                const screen = render(
+                    <PortalProvider><ExpandedNavigation><DraftInput {...baseProps}/></ExpandedNavigation></PortalProvider>,
+                    {database},
+                );
+                const composer = screen.getByTestId('draft_input');
+                expect(composer).toHaveProp('edges', expect.objectContaining({left: 'additive', right: 'additive'}));
+                fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width: 1000, height: 500}}});
+                expect(screen.getByTestId('draft_input')).toBe(composer);
+                expect(composer).toHaveProp('edges', expect.objectContaining({left: 'off', right: 'off'}));
+                fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width: 466, height: 678}}});
+                expect(composer).toHaveProp('edges', expect.objectContaining({left: 'additive', right: 'additive'}));
+            } finally {
+                LocalConfig.EnableDuoAdaptiveControls = false;
+            }
+        });
+
         it('renders all required components', async () => {
             const {getByTestId, queryByTestId} = render(<DraftInput {...baseProps}/>, {database});
 

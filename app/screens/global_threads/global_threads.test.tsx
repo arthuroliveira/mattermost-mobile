@@ -1,14 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PortalProvider} from '@gorhom/portal';
 import React from 'react';
 
 import {setGlobalThreadsTab} from '@actions/local/systems';
+import LocalConfig from '@assets/config.json';
 import NavigationHeader from '@components/navigation_header';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import useTabs from '@hooks/use_tabs';
-import {renderWithEverything} from '@test/intl-test-helper';
+import ExpandedNavigation from '@screens/home/expanded_navigation';
+import {act, fireEvent, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import GlobalThreads from './global_threads';
@@ -17,6 +20,7 @@ import Header from './threads_list/header';
 import type {Database} from '@nozbe/watermelondb';
 
 jest.mock('@hooks/device', () => ({
+    ...jest.requireActual('@hooks/device'),
     useIsTablet: jest.fn().mockReturnValue(false),
 }));
 
@@ -67,7 +71,27 @@ describe('GlobalThreads', () => {
     });
 
     afterEach(async () => {
+        LocalConfig.EnableDuoAdaptiveControls = false;
         await DatabaseManager.deleteServerDatabase(serverUrl);
+    });
+
+    it('should fill the landscape pane without side margins and retain the selected Threads tab through resizing', () => {
+        LocalConfig.EnableDuoAdaptiveControls = true;
+        const screen = renderWithEverything(
+            <PortalProvider><ExpandedNavigation><GlobalThreads {...baseProps}/></ExpandedNavigation></PortalProvider>,
+            {database},
+        );
+        const threads = screen.getByTestId('global_threads.screen');
+        act(() => screen.getByTestId('global_threads.threads_list.header').props.tabsProps.onTabChange('unreads'));
+        for (const width of [1000, 400, 1000]) {
+            fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width, height: 500}}});
+            expect(screen.getByTestId('global_threads.screen')).toBe(threads);
+            expect(threads).toHaveProp('edges', expect.objectContaining({
+                left: width === 1000 ? 'off' : 'additive',
+                right: width === 1000 ? 'off' : 'additive',
+            }));
+            expect(screen.getByTestId('global_threads.threads_list.header').props.tabsProps.selectedTab).toBe('unreads');
+        }
     });
 
     it('renders correctly with default props', () => {

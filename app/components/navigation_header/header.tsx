@@ -13,11 +13,13 @@ import ViewConstants from '@constants/view';
 import {useIsTablet} from '@hooks/device';
 import {useExpandedNavigation} from '@screens/home/expanded_navigation';
 import ExpandedBack from '@screens/home/expanded_navigation/back';
+import {isDuoDevice} from '@screens/home/expanded_navigation/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
     defaultHeight: number;
+    reserveHorizontalInsets?: boolean;
     hasSearch: boolean;
     isLargeTitle: boolean;
     heightOffset: number;
@@ -130,6 +132,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const Header = ({
     defaultHeight,
+    reserveHorizontalInsets = false,
     hasSearch,
     isLargeTitle,
     heightOffset,
@@ -151,7 +154,13 @@ const Header = ({
     const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
-    const {active: primaryRailActive} = useExpandedNavigation();
+    const {active: primaryRailActive, sideBackActive, headerLeft, headerRight} = useExpandedNavigation();
+    const reserveSides = isDuoDevice() && !primaryRailActive;
+
+    // Inline headers already sit inside a native SafeAreaView. Reserve only
+    // the extra camera clearance there; stack headers own the full inset.
+    const leftInset = reserveHorizontalInsets ? Math.max(insets.left, headerLeft) : Math.max(0, headerLeft - insets.left);
+    const rightInset = reserveHorizontalInsets ? Math.max(insets.right, headerRight) : Math.max(0, headerRight - insets.right);
 
     const opacity = useAnimatedStyle(() => {
         if (!isLargeTitle) {
@@ -192,12 +201,15 @@ const Header = ({
     }, [leftComponent, showBackButton, rightButtons, rightComponent]);
 
     return (
-        <Animated.View style={containerStyle}>
-            {primaryRailActive && showBackButton && onBackPress &&
+        <Animated.View
+            style={containerStyle}
+            testID='navigation.header'
+        >
+            {sideBackActive && showBackButton && onBackPress &&
             <ExpandedBack onPress={onBackPress}>{leftComponent}</ExpandedBack>
             }
-            {showBackButton && !primaryRailActive &&
-            <Animated.View style={styles.leftContainer}>
+            {showBackButton && !sideBackActive &&
+            <Animated.View style={[styles.leftContainer, reserveSides && {left: leftInset}]}>
                 <TouchableWithFeedback
                     borderlessRipple={true}
                     onPress={onBackPress}
@@ -217,7 +229,7 @@ const Header = ({
                 </TouchableWithFeedback>
             </Animated.View>
             }
-            <Animated.View style={[styles.titleContainer, additionalTitleStyle]}>
+            <Animated.View style={[styles.titleContainer, additionalTitleStyle, reserveSides && {left: 16 + leftInset, right: 16 + rightInset, width: 'auto'}]}>
                 <TouchableWithFeedback
                     disabled={!onTitlePress}
                     onPress={onTitlePress}
@@ -258,7 +270,10 @@ const Header = ({
                     </View>
                 </TouchableWithFeedback>
             </Animated.View>
-            <Animated.View style={styles.rightContainer}>
+            <Animated.View
+                testID='navigation.header.actions'
+                style={[styles.rightContainer, reserveSides && {right: 4 + rightInset}]}
+            >
                 {rightComponent}
                 {Boolean(rightButtons?.length) &&
                 rightButtons?.map((r) => (

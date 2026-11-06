@@ -979,6 +979,8 @@
   "mobile.message_length.message": "Your current message is too long. Current character count: {count}/{max}",
   "mobile.message_length.message_split_left": "Message exceeds the character limit",
   "mobile.message_length.title": "Message Length",
+  "mobile.navigation.hide_sidebar": "Hide sidebar",
+  "mobile.navigation.show_sidebar": "Show sidebar",
   "mobile.no_results_with_term.files": "No files matching “{term}”",
   "mobile.no_results_with_term.messages": "No matches found for “{term}”",
   "mobile.no_results.spelling": "Check the spelling or try another search.",

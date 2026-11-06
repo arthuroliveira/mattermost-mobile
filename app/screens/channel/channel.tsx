@@ -90,11 +90,14 @@ const Channel = ({
     }, [currentScreen, isTablet, isTabletView, expanded]);
 
     const safeAreaViewEdges: Edge[] = useMemo(() => {
+        if (expanded) {
+            return isTablet ? [] : ['bottom'];
+        }
         if (isTablet) {
             return ['left', 'right'];
         }
         return ['left', 'right', 'bottom'];
-    }, [isTablet]);
+    }, [expanded, isTablet]);
 
     useAndroidHardwareBackHandler(Screens.CHANNEL, navigateBack);
 

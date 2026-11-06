@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {PortalProvider} from '@gorhom/portal';
+import RNUtils from '@mattermost/rnutils';
 import {router, Stack} from 'expo-router';
 import {store} from 'expo-router/build/global-state/router-store';
 import {act, fireEvent, renderRouter} from 'expo-router/testing-library';
 import React, {useState} from 'react';
 import {IntlProvider} from 'react-intl';
 import {Text, TextInput, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import LocalConfig from '@assets/config.json';
 import {useAppNavigationHeader} from '@hooks/navigation_header';
@@ -110,6 +112,68 @@ beforeEach(() => {
 afterEach(() => {
     LocalConfig.EnableDuoAdaptiveControls = false;
     jest.useRealTimers();
+});
+
+it('should place folded-Duo Back in the system side area without narrowing the chat or moving the bottom tabs', () => {
+    const device = jest.requireMock<typeof import('expo-device')>('expo-device');
+    const originalModelId = device.modelId;
+    const originalDimensions = RNUtils.getWindowDimensions();
+    const originalInsets = jest.mocked(useSafeAreaInsets).getMockImplementation();
+    Object.defineProperty(device, 'modelId', {configurable: true, value: 'iPhone19,4'});
+    jest.mocked(RNUtils.getWindowDimensions).mockReturnValue({width: 466, height: 678, verticalBarTop: 156, verticalBarBottom: 20});
+    jest.mocked(useSafeAreaInsets).mockReturnValue({top: 0, bottom: 20, left: 0, right: 88});
+    try {
+        const screen = setup();
+        const fold = () => fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width: 466, height: 678}}});
+        fold();
+        expect(screen.getByTestId('tab_bar.bottom')).toBeVisible();
+        act(() => router.push('/(authenticated)/channel'));
+        act(() => router.push('/(authenticated)/thread'));
+        const before = navigationState();
+        expect(screen.queryByTestId('navigation.header.back')).toBeNull();
+        expect(screen.getByRole('button', {name: 'Back'})).toBe(screen.getByTestId('duo.navigation.back'));
+        expect(screen.getByTestId('duo.navigation.rail')).toHaveStyle({position: 'absolute', right: 0, paddingTop: 156});
+        expect(screen.getByTestId('tab_bar.bottom', {includeHiddenElements: true})).not.toBeVisible();
+        expect(screen.queryByTestId('duo.primary.scroll')).toBeNull();
+        expect(screen.queryByTestId('duo.navigation.sidebar_toggle')).toBeNull();
+        fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width: 669, height: 951}}});
+        expect(screen.queryByTestId('duo.navigation.back')).toBeNull();
+        expect(screen.getByTestId('navigation.header.back')).toBeVisible();
+        expect(navigationState()).toEqual(before);
+        fold();
+        fireEvent.press(screen.getByTestId('duo.navigation.back'));
+        expect(screen.getPathname()).toBe('/channel');
+        fireEvent.press(screen.getByTestId('duo.navigation.back'));
+        expect(screen.getPathname()).toBe('/channel_list');
+        expect(screen.getByTestId('tab_bar.bottom')).toBeVisible();
+        expect(screen.queryByTestId('duo.navigation.back')).toBeNull();
+    } finally {
+        Object.defineProperty(device, 'modelId', {configurable: true, value: originalModelId});
+        jest.mocked(RNUtils.getWindowDimensions).mockReturnValue(originalDimensions);
+        if (originalInsets) {
+            jest.mocked(useSafeAreaInsets).mockImplementation(originalInsets);
+        }
+    }
+});
+
+it('should preserve the real navigation stack when collapsing the sidebar above a pushed chat', () => {
+    const screen = setup();
+    LocalConfig.EnableDuoAdaptiveControls = true;
+    try {
+        resize(screen, 1000);
+        act(() => router.push('/(authenticated)/channel'));
+        const before = navigationState();
+        fireEvent.press(screen.getByRole('button', {name: 'Hide sidebar'}));
+        expect(screen.getPathname()).toBe('/channel');
+        expect(navigationState()).toEqual(before);
+        expect(screen.getByTestId('duo.navigation.list', {includeHiddenElements: true})).not.toBeVisible();
+        act(() => jest.advanceTimersByTime(750));
+        fireEvent.press(screen.getByRole('button', {name: 'Show sidebar'}));
+        expect(screen.getByTestId('duo.navigation.list')).toBeVisible();
+        expect(navigationState()).toEqual(before);
+    } finally {
+        LocalConfig.EnableDuoAdaptiveControls = false;
+    }
 });
 
 it.each([

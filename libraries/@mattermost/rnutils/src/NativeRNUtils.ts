@@ -39,6 +39,11 @@ type Constants = Readonly<{
 export type WindowDimensionsChanged = Readonly<{
   width: Double;
   height: Double;
+  verticalBarTop?: Double;
+  verticalBarBottom?: Double;
+  horizontalBarTop?: Double;
+  horizontalBarLeft?: Double;
+  horizontalBarRight?: Double;
 }>
 
 type HasRegisteredLoadResponse = {

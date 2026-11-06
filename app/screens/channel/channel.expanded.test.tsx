@@ -18,7 +18,7 @@ jest.mock('./use_gm_as_dm_notice', () => () => undefined);
 jest.mock('@hooks/channel_switch', () => ({useChannelSwitch: () => false}));
 jest.mock('@hooks/team_switch', () => ({useTeamSwitch: () => false}));
 jest.mock('@hooks/android_back_handler', () => () => undefined);
-jest.mock('@hooks/device', () => ({useIsTablet: () => false}));
+jest.mock('@hooks/device', () => ({...jest.requireActual('@hooks/device'), useIsTablet: () => false}));
 jest.mock('@store/navigation_store', () => ({useCurrentScreen: jest.fn()}));
 jest.mock('@actions/app/global', () => ({storeLastViewedChannelIdAndServer: jest.fn(), removeLastViewedChannelIdAndServer: jest.fn()}));
 
@@ -44,7 +44,9 @@ it('should enable the embedded conversation keyboard on Home without impersonati
     fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width: 1000, height: 500}}});
     const {UNSAFE_getByType: getByType} = screen;
     await waitFor(() => expect(getByType('ChannelContent' as unknown as React.ComponentType)).toHaveProp('enabled', true));
+    expect(screen.getByTestId('channel.screen')).toHaveProp('edges', expect.objectContaining({left: 'off', right: 'off', bottom: 'additive'}));
     fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width: 400, height: 800}}});
     expect(getByType('ChannelContent' as unknown as React.ComponentType)).toHaveProp('enabled', false);
+    expect(screen.getByTestId('channel.screen')).toHaveProp('edges', expect.objectContaining({left: 'additive', right: 'additive', bottom: 'additive'}));
     LocalConfig.EnableDuoAdaptiveControls = false;
 });

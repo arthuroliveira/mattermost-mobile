@@ -22,7 +22,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     label: {color: theme.centerChannelColor, ...typography('Body', 75)},
 }));
 
-// Mounted only in the expanded shell. Focus is the owning route's focus, not
+// Hosted in the Duo side area. Focus is the owning route's focus, not
 // the portal host's: outgoing headers must not leave a second Back behind.
 export default function ExpandedBack({onPress, children}: React.PropsWithChildren<{onPress: () => void}>) {
     const focused = useIsFocused();

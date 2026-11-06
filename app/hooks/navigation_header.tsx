@@ -69,6 +69,7 @@ export function useAppNavigationHeader(title: string, hasSearch = false, heightO
                 return (
                     <Header
                         defaultHeight={defaultHeight}
+                        reserveHorizontalInsets={true}
                         hasSearch={hasSearch}
                         heightOffset={heightOffset}
                         isLargeTitle={isLargeTitle}

@@ -261,6 +261,22 @@ import React
                         "width": frame.width,
                         "height": frame.height
                     ]
+                    if #available(iOS 27.1, *),
+                       let window = UIApplication.shared.delegate?.window ?? nil {
+                        // Match PRIMARY_RAIL_WIDTH in expanded_navigation/policy.ts.
+                        // UIKit's bar region accounts for the vertical status area
+                        // and camera rather than excluding that entire column.
+                        let region = UIView.LayoutRegion.bar(onEdge: UIRectEdge.right, extent: 88)
+                        let barInsets = window.edgeInsets(for: region)
+                        dimensions["verticalBarTop"] = barInsets.top
+                        dimensions["verticalBarBottom"] = barInsets.bottom
+                        // The app's standard header row is 44 points high.
+                        let headerRegion = UIView.LayoutRegion.bar(onEdge: UIRectEdge.top, extent: 44)
+                        let headerInsets = window.edgeInsets(for: headerRegion)
+                        dimensions["horizontalBarTop"] = headerInsets.top
+                        dimensions["horizontalBarLeft"] = headerInsets.left
+                        dimensions["horizontalBarRight"] = headerInsets.right
+                    }
                 }
               group.leave()
             }

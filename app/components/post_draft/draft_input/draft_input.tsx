@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {useAnimatedReaction} from 'react-native-reanimated';
@@ -13,11 +13,10 @@ import {Screens} from '@constants';
 import {useKeyboardState} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
+import {useExpandedNavigation} from '@screens/home/expanded_navigation';
 import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
-import {useCurrentScreen} from '@store/navigation_store';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -70,6 +69,7 @@ export type Props = {
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
+const EXPANDED_SAFE_AREA_VIEW_EDGES: Edge[] = [];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -148,8 +148,7 @@ function DraftInput({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const isTablet = useIsTablet();
-    const currentScreen = useCurrentScreen();
+    const {active: expanded} = useExpandedNavigation();
     const [layoutHeight, setLayoutHeight] = React.useState(0);
     const {bottom} = useSafeAreaInsets();
     const {inputRef, stateContext, blurAndDismissKeyboard} = useKeyboardState();
@@ -160,13 +159,7 @@ function DraftInput({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const edges = useMemo<Edge[]>(() => {
-        if (isTablet && currentScreen === Screens.CHANNEL_LIST) {
-            return ['left', 'right'];
-        }
-
-        return SAFE_AREA_VIEW_EDGES;
-    }, [isTablet, currentScreen]);
+    const edges = expanded ? EXPANDED_SAFE_AREA_VIEW_EDGES : SAFE_AREA_VIEW_EDGES;
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         const {height} = e.nativeEvent.layout;

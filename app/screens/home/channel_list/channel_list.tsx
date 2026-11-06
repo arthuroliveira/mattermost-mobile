@@ -23,8 +23,8 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
-import {isAdaptiveControlsEnabled} from '@screens/channel/adaptive_controls/development';
 import {useExpandedNavigation} from '@screens/home/expanded_navigation';
+import {isExpandedNavigationEnabled} from '@screens/home/expanded_navigation/device';
 import {navigateToScreen} from '@screens/navigation';
 import {NavigationStore, useCurrentScreen} from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
@@ -81,7 +81,7 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     const isTablet = useIsTablet();
     const {active: expanded, listHost} = useExpandedNavigation();
-    const expandedOptIn = isAdaptiveControlsEnabled();
+    const expandedOptIn = isExpandedNavigationEnabled();
     const route = useRoute();
     const isFocused = useIsFocused();
     const navigation = useNavigation();

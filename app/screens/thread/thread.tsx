@@ -13,6 +13,7 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
+import {useExpandedNavigation} from '@screens/home/expanded_navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 
@@ -37,6 +38,7 @@ const styles = StyleSheet.create({
 });
 
 const safeAreaViewEdges: Edge[] = ['left', 'right', 'bottom'];
+const expandedSafeAreaViewEdges: Edge[] = ['bottom'];
 
 const Thread = ({
     isCRTEnabled,
@@ -51,6 +53,7 @@ const Thread = ({
     const [containerHeight, setContainerHeight] = useState(0);
     const navigation = useNavigation();
     const isVisible = useIsFocused();
+    const {active: expanded} = useExpandedNavigation();
 
     useAndroidHardwareBackHandler(Screens.THREAD, navigation.goBack);
 
@@ -104,7 +107,7 @@ const Thread = ({
     return (
         <SafeAreaView
             style={styles.flex}
-            edges={safeAreaViewEdges}
+            edges={expanded ? expandedSafeAreaViewEdges : safeAreaViewEdges}
             testID='thread.screen'
             onLayout={onLayout}
         >

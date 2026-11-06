@@ -1,13 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PortalProvider} from '@gorhom/portal';
 import {act, cleanup, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
+import LocalConfig from '@assets/config.json';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {useIsInitialSync} from '@hooks/is_initial_sync';
 import {getTeamById} from '@queries/servers/team';
-import {renderWithEverything} from '@test/intl-test-helper';
+import ExpandedNavigation from '@screens/home/expanded_navigation';
+import {fireEvent, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import CategoriesList from './categories_list';
@@ -36,10 +39,36 @@ describe('components/categories_list', () => {
     });
 
     afterEach(async () => {
+        LocalConfig.EnableDuoAdaptiveControls = false;
         cleanup();
 
         // Allow observables to settle before next test
         await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    it('should leave outer safe-area ownership to the split shell and constrain its team title', () => {
+        LocalConfig.EnableDuoAdaptiveControls = true;
+        const screen = renderWithEverything(
+            <PortalProvider>
+                <ExpandedNavigation>
+                    <CategoriesList
+                        moreThanOneTeam={true}
+                        hasChannels={true}
+                        draftsCount={0}
+                        scheduledPostCount={0}
+                        scheduledPostHasError={false}
+                    />
+                </ExpandedNavigation>
+            </PortalProvider>, {database},
+        );
+        expect(screen.getByTestId('channel_list.categories.safe_area')).toHaveProp('edges', expect.objectContaining({right: 'additive'}));
+        fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width: 951, height: 600}}});
+        expect(screen.getByTestId('channel_list.categories.safe_area')).toHaveProp('edges', expect.objectContaining({right: 'off'}));
+        expect(screen.getByTestId('channel_list_header.team_display_name')).toHaveProp('numberOfLines', 1);
+        fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width: 466, height: 678}}});
+        expect(screen.getByTestId('channel_list.categories.safe_area')).toHaveProp('edges', expect.objectContaining({right: 'additive'}));
+        expect(screen.getByTestId('channel_list_header.team_display_name')).toHaveProp('numberOfLines', 2);
+        LocalConfig.EnableDuoAdaptiveControls = false;
     });
 
     it('should render', async () => {

@@ -5,6 +5,7 @@ import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {type Insets, Pressable, type PressableStateCallbackType, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {logout} from '@actions/remote/session';
 import CompassIcon from '@components/compass_icon';
@@ -16,6 +17,8 @@ import {HOME_PADDING} from '@constants/view';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {useExpandedNavigation} from '@screens/home/expanded_navigation';
+import {isDuoDevice} from '@screens/home/expanded_navigation/device';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
@@ -133,6 +136,15 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         width: '85%', // ratio derived from the design
         flexShrink: 1,
     },
+    expandedFirstBox: {
+        width: undefined,
+        flex: 1,
+        minWidth: 0,
+    },
+    expandedHeading: {
+        flexShrink: 1,
+        ...typography('Heading', 300),
+    },
 }));
 
 const hitSlop: Insets = {top: 10, bottom: 30, left: 20, right: 20};
@@ -154,6 +166,8 @@ const ChannelListHeader = ({
     pushProxyStatus,
 }: Props) => {
     const theme = useTheme();
+    const {active: expanded} = useExpandedNavigation();
+    const insets = useSafeAreaInsets();
     const intl = useIntl();
     const serverDisplayName = useServerDisplayName();
     const marginLeft = useSharedValue(iconPad ? 50 : 0);
@@ -251,7 +265,7 @@ const ChannelListHeader = ({
     if (displayName) {
         header = (
             <View style={styles.outsideBox}>
-                <View style={styles.firstBox}>
+                <View style={[styles.firstBox, expanded && styles.expandedFirstBox]}>
                     <View style={styles.headerRow}>
                         <Pressable
                             onPress={hasTeamMenuItems ? onTeamPress : undefined}
@@ -261,9 +275,9 @@ const ChannelListHeader = ({
                             testID='channel_list_header.team.button'
                         >
                             <Text
-                                numberOfLines={2}
+                                numberOfLines={expanded ? 1 : 2}
                                 ellipsizeMode='tail'
-                                style={styles.headingStyles}
+                                style={[styles.headingStyles, expanded && styles.expandedHeading]}
                                 testID='channel_list_header.team_display_name'
                             >
                                 {displayName}
@@ -362,7 +376,7 @@ const ChannelListHeader = ({
     }
 
     return (
-        <Animated.View style={[animatedStyle, HOME_PADDING]}>
+        <Animated.View style={[animatedStyle, HOME_PADDING, !expanded && isDuoDevice() && {paddingRight: HOME_PADDING.paddingRight + insets.right}]}>
             {header}
         </Animated.View>
     );

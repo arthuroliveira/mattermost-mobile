@@ -18,6 +18,7 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import useTabs, {type TabDefinition} from '@hooks/use_tabs';
+import {useExpandedNavigation} from '@screens/home/expanded_navigation';
 import {navigateBack} from '@screens/navigation';
 
 import ThreadsList from './threads_list';
@@ -32,6 +33,7 @@ type Props = {
 };
 
 const edges: Edge[] = ['left', 'right'];
+const expandedEdges: Edge[] = [];
 
 const styles = StyleSheet.create({
     flex: {
@@ -46,6 +48,7 @@ const GlobalThreads = ({globalThreadsTab, hasUnreads, teamId}: Props) => {
     const intl = useIntl();
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
+    const {active: expanded} = useExpandedNavigation();
     const flatListRef = useRef<FlatList<ThreadModel>>(null);
     const defaultHeight = useDefaultHeaderHeight();
 
@@ -119,7 +122,7 @@ const GlobalThreads = ({globalThreadsTab, hasUnreads, teamId}: Props) => {
 
     return (
         <SafeAreaView
-            edges={edges}
+            edges={expanded ? expandedEdges : edges}
             mode='margin'
             style={styles.flex}
             testID='global_threads.screen'

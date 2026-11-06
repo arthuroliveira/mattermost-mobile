@@ -82,6 +82,11 @@ describe('screens/thread/thread', () => {
             for (const width of [1000, 400, 1000, 400]) {
                 fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width, height: 500}}});
                 expect(screen.getByTestId('thread.screen')).toBe(thread);
+                expect(thread).toHaveProp('edges', expect.objectContaining({
+                    left: width === 1000 ? 'off' : 'additive',
+                    right: width === 1000 ? 'off' : 'additive',
+                    bottom: 'additive',
+                }));
                 expect(StyleSheet.flatten(junction[0].props.style)).toMatchObject({backgroundColor: theme.sidebarBg});
                 expect(StyleSheet.flatten(junction[1].props.style)).toMatchObject({
                     backgroundColor: theme.centerChannelBg,

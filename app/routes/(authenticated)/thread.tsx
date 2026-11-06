@@ -47,6 +47,7 @@ export default function ThreadRoute() {
             header: ({options}: NativeStackHeaderProps) => (
                 <Header
                     defaultHeight={defaultHeight}
+                    reserveHorizontalInsets={true}
                     hasSearch={false}
                     isLargeTitle={false}
                     heightOffset={0}
