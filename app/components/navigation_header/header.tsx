@@ -157,10 +157,10 @@ const Header = ({
     const {active: primaryRailActive, sideBackActive, headerLeft, headerRight} = useExpandedNavigation();
     const reserveSides = isDuoDevice() && !primaryRailActive;
 
-    // Inline headers already sit inside a native SafeAreaView. Reserve only
-    // the extra camera clearance there; stack headers own the full inset.
-    const leftInset = reserveHorizontalInsets ? Math.max(insets.left, headerLeft) : Math.max(0, headerLeft - insets.left);
-    const rightInset = reserveHorizontalInsets ? Math.max(insets.right, headerRight) : Math.max(0, headerRight - insets.right);
+    // Both header paths share the content column. Inline headers inherit its
+    // native safe-area frame; stack headers must inset their own background.
+    const leftInset = Math.max(0, headerLeft - insets.left);
+    const rightInset = Math.max(0, headerRight - insets.right);
 
     const opacity = useAnimatedStyle(() => {
         if (!isLargeTitle) {
@@ -188,7 +188,8 @@ const Header = ({
     }), [defaultHeight, isTablet, insets.top]);
 
     const containerStyle = useMemo(() => (
-        [styles.container, containerAnimatedStyle]), [styles, containerAnimatedStyle]);
+        [styles.container, containerAnimatedStyle, reserveSides && reserveHorizontalInsets && {marginLeft: insets.left, marginRight: insets.right}]),
+    [styles, containerAnimatedStyle, reserveSides, reserveHorizontalInsets, insets.left, insets.right]);
 
     const additionalTitleStyle = useMemo(() => {
         return {

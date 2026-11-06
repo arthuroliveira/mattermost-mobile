@@ -99,7 +99,7 @@ function HeaderProbe({reserveHorizontalInsets = true}: {reserveHorizontalInsets?
 }
 
 it.each([
-    {reserveHorizontalInsets: true, right: 96, expectedRight: 100},
+    {reserveHorizontalInsets: true, right: 96, expectedRight: 4},
     {reserveHorizontalInsets: false, right: 0, expectedRight: 100},
     {reserveHorizontalInsets: false, right: 96, expectedRight: 4},
 ])('should keep portrait header controls clear of the camera without duplicating parent inset $right ($reserveHorizontalInsets)', ({reserveHorizontalInsets, right, expectedRight}) => {
@@ -122,6 +122,9 @@ it.each([
         expect(screen.getByTestId('duo.navigation.list', {includeHiddenElements: true})).not.toBeVisible();
         expect(screen.getByTestId('duo.navigation.rail', {includeHiddenElements: true})).not.toBeVisible();
         expect(screen.getByTestId('navigation.header')).toHaveStyle({height: 52, paddingTop: 8});
+        if (reserveHorizontalInsets) {
+            expect(screen.getByTestId('navigation.header')).toHaveStyle({marginLeft: 0, marginRight: right});
+        }
         expect(screen.getByTestId('navigation.header.actions')).toHaveStyle({right: expectedRight});
     } finally {
         Object.defineProperty(device, 'modelId', {configurable: true, value: originalModelId});

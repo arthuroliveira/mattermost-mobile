@@ -108,4 +108,24 @@ describe('screens/thread/thread', () => {
         const junction = screen.UNSAFE_root.findByType(RoundedHeaderContext).findAllByType(View);
         expect(StyleSheet.flatten(junction[1].props.style)).toMatchObject({borderTopLeftRadius: 12, borderTopRightRadius: 12});
     });
+
+    it('should keep the Duo content edge square when folded, in portrait, and in landscape', () => {
+        const device = jest.requireMock<typeof import('expo-device')>('expo-device');
+        const originalModelId = device.modelId;
+        Object.defineProperty(device, 'modelId', {configurable: true, value: 'iPhone19,4'});
+        try {
+            const screen = renderWithIntlAndTheme(
+                <PortalProvider><ExpandedNavigation><Thread {...baseProps}/></ExpandedNavigation></PortalProvider>,
+            );
+            const thread = screen.getByTestId('thread.screen');
+            for (const [width, height] of [[466, 678], [669, 951], [951, 669], [466, 678]]) {
+                fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width, height}}});
+                expect(screen.getByTestId('thread.screen')).toBe(thread);
+                const junction = screen.UNSAFE_root.findByType(RoundedHeaderContext).findAllByType(View);
+                expect(StyleSheet.flatten(junction[1].props.style)).toMatchObject({borderTopLeftRadius: 0, borderTopRightRadius: 0});
+            }
+        } finally {
+            Object.defineProperty(device, 'modelId', {configurable: true, value: originalModelId});
+        }
+    });
 });

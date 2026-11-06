@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import ChannelBookmarks from '@components/channel_bookmarks';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {isDuoDevice} from '@screens/home/expanded_navigation/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -24,6 +25,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.centerChannelBg,
         borderTopLeftRadius: 12,
         borderTopRightRadius: 12,
+    },
+    squareContent: {
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
     },
     separator: {
         height: 1,
@@ -45,16 +50,18 @@ const ChannelHeaderBookmarks = ({canAddBookmarks, channelId}: Props) => {
     const theme = useTheme();
     const defaultHeight = useDefaultHeaderHeight();
     const styles = getStyleSheet(theme);
+    const square = isDuoDevice();
 
     const containerStyle = useMemo(() => ({
         ...styles.content,
+        ...(square && styles.squareContent),
         top: defaultHeight,
         zIndex: 1,
-    }), [defaultHeight, styles.content]);
+    }), [defaultHeight, square, styles.content, styles.squareContent]);
 
     return (
         <View style={containerStyle}>
-            <View style={styles.content}>
+            <View style={[styles.content, square && styles.squareContent]}>
                 <View style={styles.paddingHorizontal}>
                     <ChannelBookmarks
                         channelId={channelId}
