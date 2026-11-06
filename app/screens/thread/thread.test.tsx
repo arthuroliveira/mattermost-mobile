@@ -1,11 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PortalProvider} from '@gorhom/portal';
 import React from 'react';
-import {Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 
+import LocalConfig from '@assets/config.json';
 import FloatingCallContainer from '@calls/components/floating_call_container';
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import RoundedHeaderContext from '@components/rounded_header_context';
+import {getDefaultThemeByAppearance} from '@context/theme';
+import ExpandedNavigation from '@screens/home/expanded_navigation';
+import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import Thread from './thread';
 
@@ -59,5 +64,43 @@ describe('screens/thread/thread', () => {
         );
 
         expect(getByTestId('floating_call_container.channel_id')).toHaveTextContent('channel-1');
+    });
+
+    it('should square only the real Thread content junction while the expanded rail is active', () => {
+        LocalConfig.EnableDuoAdaptiveControls = true;
+        const screen = renderWithIntlAndTheme(
+            <PortalProvider>
+                <ExpandedNavigation><Thread {...baseProps}/></ExpandedNavigation>
+            </PortalProvider>,
+        );
+        const thread = screen.getByTestId('thread.screen');
+        const junction = screen.UNSAFE_root.findByType(RoundedHeaderContext).findAllByType(View);
+        const theme = getDefaultThemeByAppearance();
+        expect(StyleSheet.flatten(junction[0].props.style)).toMatchObject({backgroundColor: theme.sidebarBg});
+        expect(StyleSheet.flatten(junction[1].props.style)).toMatchObject({backgroundColor: theme.centerChannelBg, borderTopLeftRadius: 12, borderTopRightRadius: 12});
+        try {
+            for (const width of [1000, 400, 1000, 400]) {
+                fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width, height: 500}}});
+                expect(screen.getByTestId('thread.screen')).toBe(thread);
+                expect(StyleSheet.flatten(junction[0].props.style)).toMatchObject({backgroundColor: theme.sidebarBg});
+                expect(StyleSheet.flatten(junction[1].props.style)).toMatchObject({
+                    backgroundColor: theme.centerChannelBg,
+                    borderTopLeftRadius: width === 1000 ? 0 : 12,
+                    borderTopRightRadius: width === 1000 ? 0 : 12,
+                });
+            }
+        } finally {
+            LocalConfig.EnableDuoAdaptiveControls = false;
+        }
+    });
+
+    it('should retain rounded Thread content at wide bounds with the opt-in disabled', () => {
+        LocalConfig.EnableDuoAdaptiveControls = false;
+        const screen = renderWithIntlAndTheme(
+            <PortalProvider><ExpandedNavigation><Thread {...baseProps}/></ExpandedNavigation></PortalProvider>,
+        );
+        fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width: 1000, height: 500}}});
+        const junction = screen.UNSAFE_root.findByType(RoundedHeaderContext).findAllByType(View);
+        expect(StyleSheet.flatten(junction[1].props.style)).toMatchObject({borderTopLeftRadius: 12, borderTopRightRadius: 12});
     });
 });

@@ -15,6 +15,8 @@ import {useAppNavigationHeader} from '@hooks/navigation_header';
 import TabLayout from '../../../routes/(authenticated)/(home)/_layout';
 import HomeIndex from '../../../routes/(authenticated)/(home)/index';
 import AuthenticatedLayout from '../../../routes/(authenticated)/_layout';
+import CodeRoute from '../../../routes/(authenticated)/code';
+import TableRoute from '../../../routes/(authenticated)/table';
 import ThreadRoute from '../../../routes/(authenticated)/thread';
 
 // Keep Expo Router, native Stack, Tabs, focus, actions and portals real. Only
@@ -25,6 +27,8 @@ jest.mock('@database/components', () => ({withServerDatabase: (Component: unknow
 jest.mock('@hooks/use_has_credentials', () => ({useHasCredentials: () => true}));
 jest.mock('@components/global_classification_banner', () => ({__esModule: true, default: ({children}: React.PropsWithChildren) => children}));
 jest.mock('@screens/thread', () => 'ThreadScreen');
+jest.mock('@screens/code', () => 'CodeScreen');
+jest.mock('@screens/table', () => 'TableScreen');
 jest.mock('../tab_bar/account', () => 'Account');
 jest.mock('../tab_bar/home', () => 'Home');
 jest.mock('../tab_bar/mentions', () => 'Mentions');
@@ -70,6 +74,8 @@ const routes = {
     '(authenticated)/detail': Detail,
     '(authenticated)/search_result': Detail,
     '(authenticated)/thread': ThreadRoute,
+    '(authenticated)/code': CodeRoute,
+    '(authenticated)/table': TableRoute,
 };
 
 function setup() {
@@ -210,4 +216,71 @@ it('should retain ordinary bottom tabs at wide bounds when the opt-in is disable
     expect(screen.queryByTestId('duo.primary.scroll')).toBeNull();
     expect(screen.queryByTestId('duo.navigation.back')).toBeNull();
     expect(navigationState()).toEqual(initial);
+});
+
+it.each(['thread', 'code', 'table'] as const)('should keep ordinary header Back on real %s at wide bounds with the opt-in disabled', (route) => {
+    LocalConfig.EnableDuoAdaptiveControls = false;
+    const screen = setup();
+    resize(screen, 1000);
+    act(() => router.push('/(authenticated)/channel'));
+    const channelState = navigationState();
+    act(() => router.push(`/(authenticated)/${route}`));
+    expect(screen.getAllByTestId('navigation.header.back')).toHaveLength(1);
+    expect(screen.queryByTestId('duo.navigation.back')).toBeNull();
+    expect(screen.queryByTestId('duo.primary.scroll')).toBeNull();
+    fireEvent.press(screen.getByTestId('navigation.header.back'));
+    expect(screen.getPathname()).toBe('/channel');
+    expect(navigationState().stack.routes).toEqual(channelState.stack.routes);
+});
+
+it('should transfer one focused Back through real Thread, Code and Table routes across repeated resize', () => {
+    const screen = setup();
+    fireEvent.changeText(screen.getByTestId('home.draft'), 'retained navigation fixture');
+    resize(screen, 1000);
+    act(() => router.push('/(authenticated)/channel'));
+    act(() => router.push({pathname: '/(authenticated)/thread', params: {rootId: 'root-fixture', channelName: 'Channel fixture'}}));
+    const threadState = navigationState();
+    expect(threadState.stack.routes[threadState.stack.index ?? 0].params).toMatchObject({rootId: 'root-fixture', channelName: 'Channel fixture'});
+    act(() => router.push({pathname: '/(authenticated)/code', params: {title: 'Code fixture', code: 'fixture'}}));
+    const codeState = navigationState();
+    act(() => router.push('/(authenticated)/table'));
+    const tableState = navigationState();
+
+    for (const width of [400, 1000, 400, 1000]) {
+        resize(screen, width);
+        expect(navigationState()).toEqual(tableState);
+        expect(screen.getByText('Table')).toBeVisible();
+        expect(screen.queryAllByTestId('duo.navigation.back')).toHaveLength(width === 1000 ? 1 : 0);
+        expect(screen.queryAllByTestId('navigation.header.back')).toHaveLength(width === 400 ? 1 : 0);
+        if (width === 1000) {
+            // Portalled into the actual physical-right host, not just an option payload.
+            const rail = screen.getByTestId('duo.navigation.rail');
+            expect(rail.findByProps({testID: 'duo.navigation.back'})).toBeTruthy();
+            expect(screen.queryAllByTestId('tab_bar.bottom', {includeHiddenElements: true})).toHaveLength(0);
+            for (const tab of ['home', 'search', 'mentions', 'saved_messages', 'account']) {
+                expect(screen.getAllByTestId(`tab_bar.${tab}.tab`)).toHaveLength(1);
+            }
+        }
+    }
+    fireEvent.press(screen.getByTestId('duo.navigation.back'));
+    expect(screen.getPathname()).toBe('/code');
+    expect(navigationState().stack.routes).toEqual(codeState.stack.routes);
+    expect(screen.getAllByTestId('duo.navigation.back')).toHaveLength(1);
+    expect(screen.getByTestId('code.screen.title')).toHaveTextContent('Code fixture');
+    resize(screen, 400);
+    fireEvent.press(screen.getByTestId('navigation.header.back'));
+    expect(screen.getPathname()).toBe('/thread');
+    expect(navigationState().stack.routes).toEqual(threadState.stack.routes);
+    expect(screen.getByText('Thread')).toBeVisible();
+    expect(screen.getByText('in Channel fixture')).toBeVisible();
+    resize(screen, 1000);
+    fireEvent.press(screen.getByTestId('duo.navigation.back'));
+    expect(screen.getPathname()).toBe('/channel');
+    expect(screen.getAllByTestId('duo.navigation.back')).toHaveLength(1);
+    fireEvent.press(screen.getByTestId('duo.navigation.back'));
+    expect(screen.getPathname()).toBe('/channel_list');
+    expect(screen.queryByTestId('duo.navigation.back')).toBeNull();
+    expect(screen.queryByTestId('navigation.header.back')).toBeNull();
+    expect(screen.getByTestId('home.draft')).toHaveProp('value', 'retained navigation fixture');
+    expect(navigationState().home.key).toBe(threadState.home.key);
 });
