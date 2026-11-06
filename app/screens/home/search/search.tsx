@@ -27,6 +27,7 @@ import {useKeyboardHeight} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useCollapsibleHeader} from '@hooks/header';
 import useTabs from '@hooks/use_tabs';
+import {useExpandedNavigation} from '@screens/home/expanded_navigation';
 import {useCurrentScreen} from '@store/navigation_store';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes} from '@utils/search';
@@ -103,6 +104,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
+    const {sideNavigationActive} = useExpandedNavigation();
     const keyboardHeight = useKeyboardHeight();
     const currentScreen = useCurrentScreen();
     const isBottomSheetOpen = currentScreen && SCREENS_AS_BOTTOM_SHEET.has(currentScreen);
@@ -373,10 +375,11 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     }, []);
 
     const autocompleteMaxHeight = useDerivedValue(() => {
-        const iosAdjust = keyboardHeight ? keyboardHeight - BOTTOM_TAB_HEIGHT : insets.bottom;
+        const bottomTabHeight = sideNavigationActive ? 0 : BOTTOM_TAB_HEIGHT;
+        const iosAdjust = keyboardHeight ? keyboardHeight - bottomTabHeight : insets.bottom;
         const autocompleteRemoveFromHeight = headerHeight.value + (Platform.OS === 'ios' ? iosAdjust : 0);
         return containerHeight - autocompleteRemoveFromHeight;
-    }, [keyboardHeight, insets.bottom, containerHeight]);
+    }, [keyboardHeight, insets.bottom, containerHeight, sideNavigationActive]);
 
     const autocompletePosition = useDerivedValue(() => {
         return headerHeight.value - AutocompletePaddingTop;

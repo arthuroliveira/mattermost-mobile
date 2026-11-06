@@ -17,6 +17,7 @@ import {useTheme} from '@context/theme';
 import {useIsInitialSync} from '@hooks/is_initial_sync';
 import {useTeamSwitch} from '@hooks/team_switch';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
+import {useExpandedNavigation} from '@screens/home/expanded_navigation';
 import {isDMorGM} from '@utils/channel';
 import {logDebug} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -66,6 +67,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
+    const {sideNavigationActive} = useExpandedNavigation();
     const listRef = useRef<FlashListRef<FlattenedItem> | null>(null);
     const serverUrl = useServerUrl();
     const listContentStyle = useMemo(() => {
@@ -73,9 +75,9 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
             return undefined;
         }
 
-        // Custom tab bar overlays the list; without this the last row cannot scroll above it.
-        return {paddingBottom: BOTTOM_TAB_HEIGHT + insets.bottom};
-    }, [isTablet, insets.bottom]);
+        // Reserve the bottom overlay only while tabs are actually along the bottom.
+        return {paddingBottom: (sideNavigationActive ? 0 : BOTTOM_TAB_HEIGHT) + insets.bottom};
+    }, [isTablet, insets.bottom, sideNavigationActive]);
     const switchingTeam = useTeamSwitch();
     const isInitialSync = useIsInitialSync(serverUrl);
     const [initialLoad, setInitialLoad] = useState(flattenedItems.length === 0);

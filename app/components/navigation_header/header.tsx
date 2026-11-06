@@ -154,7 +154,7 @@ const Header = ({
     const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
-    const {active: primaryRailActive, sideBackActive, headerLeft, headerRight} = useExpandedNavigation();
+    const {active: primaryRailActive, sideNavigationActive, headerLeft, headerRight} = useExpandedNavigation();
     const reserveSides = isDuoDevice() && !primaryRailActive;
 
     // Both header paths share the content column. Inline headers inherit its
@@ -206,10 +206,10 @@ const Header = ({
             style={containerStyle}
             testID='navigation.header'
         >
-            {sideBackActive && showBackButton && onBackPress &&
+            {sideNavigationActive && showBackButton && onBackPress &&
             <ExpandedBack onPress={onBackPress}>{leftComponent}</ExpandedBack>
             }
-            {showBackButton && !sideBackActive &&
+            {showBackButton && !sideNavigationActive &&
             <Animated.View style={[styles.leftContainer, reserveSides && {left: leftInset}]}>
                 <TouchableWithFeedback
                     borderlessRipple={true}

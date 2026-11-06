@@ -15,7 +15,7 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import {isDuoDevice, isExpandedNavigationEnabled} from './device';
 import {DUO_INNER_SCREEN_MIN_EDGE, getExpandedNavigation, NAVIGATION_LIST_FRACTION, PRIMARY_RAIL_WIDTH} from './policy';
 
-const Context = createContext({active: false, sideBackActive: false, listHost: '', railHost: '', backHost: '', headerLeft: 0, headerRight: 0});
+const Context = createContext({active: false, sideNavigationActive: false, listHost: '', railHost: '', backHost: '', headerLeft: 0, headerRight: 0});
 export const useExpandedNavigation = () => useContext(Context);
 const styles = {
     shell: {flex: 1, direction: 'ltr' as const, flexDirection: 'row' as const},
@@ -44,11 +44,11 @@ export default function ExpandedNavigation({children}: PropsWithChildren) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const toggleSidebar = usePreventDoubleTap(useCallback(() => setSidebarCollapsed((collapsed) => !collapsed), []));
     const active = getExpandedNavigation({...bounds, insets, enabled: isExpandedNavigationEnabled(), development: __DEV__, duo: isDuoDevice()});
-    const compactSideBack = isDuoDevice() && !active && bounds.width > 0 && bounds.height > 0 &&
+    const compactNavigation = isDuoDevice() && !active && bounds.width > 0 && bounds.height > 0 &&
         Math.min(bounds.width, bounds.height) < DUO_INNER_SCREEN_MIN_EDGE && insets.right > 0 && verticalBarTop !== undefined;
-    const sideBackActive = active || compactSideBack;
+    const sideNavigationActive = active || compactNavigation;
     const listWidth = Math.max(0, bounds.width - insets.left - insets.right - PRIMARY_RAIL_WIDTH) * NAVIGATION_LIST_FRACTION;
-    const usesSystemBarArea = sideBackActive && isDuoDevice() && insets.right > 0 && verticalBarTop !== undefined;
+    const usesSystemBarArea = sideNavigationActive && isDuoDevice() && insets.right > 0 && verticalBarTop !== undefined;
     const railRight = active && !usesSystemBarArea ? insets.right : 0;
     const railTop = usesSystemBarArea ? Math.max(insets.top, verticalBarTop) : insets.top;
     const railBottom = usesSystemBarArea ? Math.max(insets.bottom, verticalBarBottom ?? 0) : insets.bottom;
@@ -57,7 +57,7 @@ export default function ExpandedNavigation({children}: PropsWithChildren) {
     }, []);
     const headerLeft = Math.max(insets.left, horizontalBarLeft ?? 0);
     const headerRight = Math.max(insets.right, horizontalBarRight ?? 0);
-    const value = useMemo(() => ({active, sideBackActive, listHost: `duo-list-${id}`, railHost: `duo-rail-${id}`, backHost: `duo-back-${id}`, headerLeft, headerRight}), [active, headerLeft, headerRight, id, sideBackActive]);
+    const value = useMemo(() => ({active, sideNavigationActive, listHost: `duo-list-${id}`, railHost: `duo-rail-${id}`, backHost: `duo-back-${id}`, headerLeft, headerRight}), [active, headerLeft, headerRight, id, sideNavigationActive]);
     const direction = I18nManager.isRTL ? 'rtl' : 'ltr';
     const headerTop = isDuoDevice() && !active ? (horizontalBarTop ?? insets.top) : insets.top;
     const paneInsets = useMemo(() => ({...insets, top: headerTop, left: active ? 0 : insets.left, right: active ? 0 : insets.right}), [active, headerTop, insets]);
@@ -85,8 +85,8 @@ export default function ExpandedNavigation({children}: PropsWithChildren) {
                     </View>
                     <View
                         testID='duo.navigation.rail'
-                        pointerEvents={compactSideBack ? 'box-none' : 'auto'}
-                        style={[styles.rail, {direction, marginRight: railRight, paddingTop: railTop, paddingBottom: railBottom}, compactSideBack && styles.compactRail, !sideBackActive && styles.hidden]}
+                        pointerEvents={compactNavigation ? 'box-none' : 'auto'}
+                        style={[styles.rail, {direction, marginRight: railRight, paddingTop: railTop, paddingBottom: railBottom, backgroundColor: theme.centerChannelBg}, compactNavigation && styles.compactRail, !sideNavigationActive && styles.hidden]}
                     >
                         {active && (
                             <Pressable

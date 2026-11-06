@@ -114,7 +114,7 @@ afterEach(() => {
     jest.useRealTimers();
 });
 
-it('should place folded-Duo Back in the system side area without narrowing the chat or moving the bottom tabs', () => {
+it('should place folded-Duo navigation in the system side area and retain real tab and Back behavior', () => {
     const device = jest.requireMock<typeof import('expo-device')>('expo-device');
     const originalModelId = device.modelId;
     const originalDimensions = RNUtils.getWindowDimensions();
@@ -126,27 +126,38 @@ it('should place folded-Duo Back in the system side area without narrowing the c
         const screen = setup();
         const fold = () => fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width: 466, height: 678}}});
         fold();
-        expect(screen.getByTestId('tab_bar.bottom')).toBeVisible();
+        expect(screen.queryByTestId('tab_bar.bottom')).toBeNull();
+        expect(screen.getByTestId('duo.primary.scroll')).toBeVisible();
         act(() => router.push('/(authenticated)/channel'));
         act(() => router.push('/(authenticated)/thread'));
         const before = navigationState();
         expect(screen.queryByTestId('navigation.header.back')).toBeNull();
         expect(screen.getByRole('button', {name: 'Back'})).toBe(screen.getByTestId('duo.navigation.back'));
         expect(screen.getByTestId('duo.navigation.rail')).toHaveStyle({position: 'absolute', right: 0, paddingTop: 156});
-        expect(screen.getByTestId('tab_bar.bottom', {includeHiddenElements: true})).not.toBeVisible();
-        expect(screen.queryByTestId('duo.primary.scroll')).toBeNull();
+        expect(screen.queryByTestId('tab_bar.bottom', {includeHiddenElements: true})).toBeNull();
+        expect(screen.getByTestId('duo.primary.scroll')).toBeVisible();
+        expect(screen.getAllByTestId('tab_bar.home.tab')).toHaveLength(1);
         expect(screen.queryByTestId('duo.navigation.sidebar_toggle')).toBeNull();
         fireEvent(screen.getByTestId('duo.navigation.shell'), 'layout', {nativeEvent: {layout: {width: 669, height: 951}}});
         expect(screen.queryByTestId('duo.navigation.back')).toBeNull();
         expect(screen.getByTestId('navigation.header.back')).toBeVisible();
+        expect(screen.queryByTestId('duo.primary.scroll')).toBeNull();
+        expect(screen.getByTestId('tab_bar.bottom', {includeHiddenElements: true})).toBeTruthy();
         expect(navigationState()).toEqual(before);
         fold();
         fireEvent.press(screen.getByTestId('duo.navigation.back'));
         expect(screen.getPathname()).toBe('/channel');
         fireEvent.press(screen.getByTestId('duo.navigation.back'));
         expect(screen.getPathname()).toBe('/channel_list');
-        expect(screen.getByTestId('tab_bar.bottom')).toBeVisible();
+        expect(screen.queryByTestId('tab_bar.bottom')).toBeNull();
         expect(screen.queryByTestId('duo.navigation.back')).toBeNull();
+        fireEvent.press(screen.getByTestId('tab_bar.search.tab'));
+        expect(screen.getPathname()).toBe('/search');
+        expect(screen.getByTestId('tab_bar.search.tab')).toHaveProp('accessibilityState', {selected: true});
+        act(() => router.push('/(authenticated)/thread'));
+        fireEvent.press(screen.getByTestId('tab_bar.home.tab'));
+        expect(screen.getPathname()).toBe('/channel_list');
+        expect(screen.getByTestId('tab_bar.home.tab')).toHaveProp('accessibilityState', {selected: true});
     } finally {
         Object.defineProperty(device, 'modelId', {configurable: true, value: originalModelId});
         jest.mocked(RNUtils.getWindowDimensions).mockReturnValue(originalDimensions);

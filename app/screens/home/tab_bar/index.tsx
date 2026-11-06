@@ -123,7 +123,7 @@ function PrimaryTab({icon: Icon, isFocused, theme, ...props}: PressableProps & {
 }
 
 function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {theme: Theme}) {
-    const {active, railHost} = useExpandedNavigation();
+    const {sideNavigationActive, railHost} = useExpandedNavigation();
     const [visible, setVisible] = useState<boolean|undefined>();
     const {width} = useWindowDimensions();
     const tabs = useMemo(() => state.routes.filter((route) => route.name !== 'index'), [state.routes]);
@@ -206,7 +206,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
                 canPreventDefault: true,
             });
             DeviceEventEmitter.emit(NavigationConstants.TAB_PRESSED);
-            if (active && !event.defaultPrevented) {
+            if (sideNavigationActive && !event.defaultPrevented) {
                 // The owning tabs can be behind a pushed conversation/detail.
                 // Reveal that existing navigator; never create a second home.
                 navigation.getParent()?.dispatch(StackActions.popTo('(home)'));
@@ -234,12 +234,12 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
                 testID={options.tabBarButtonTestID}
                 onPress={onPress}
                 onLongPress={onLongPress}
-                style={({pressed}) => [active ? style.railItem : style.item, pressed && style.pressed]}
+                style={({pressed}) => [sideNavigationActive ? style.railItem : style.item, pressed && style.pressed]}
             />
         );
     });
 
-    if (active) {
+    if (sideNavigationActive) {
         return (
             <Portal hostName={railHost}>
                 <ScrollView
